@@ -1,0 +1,13 @@
+automatically umount on exit (CRUCIAL)
+import config file (same file as borgmatic? borrow code?)
+
+push to testing
+
+interactively prune choices for backups with user input
+
+allow extraction of single file instead of mounting (much safer lock-wise) and  rename recovered file and open for review
+wait to close until user has confirmed file, give option to try again if it is
+wrong
+
+create a gui front end to handle all of this. cross platform. web-based?
+
