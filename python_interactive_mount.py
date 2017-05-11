@@ -3,6 +3,8 @@
 
 # TODO: import config file (borrow borgmatic's code).
 # TODO: automatically perform umount on exit
+
+# TODO: rescue failure to break lock
 # TODO: prune down available backups interactively.
 # TODO: functions for finding and extracting single file.
 import os, subprocess, pprint, re, sys, datetime
