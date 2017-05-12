@@ -40,8 +40,13 @@ def backup_list():
     # get list from backup repo
     run = subprocess.run([borg_path, 'list', repo], \
             stdout=subprocess.PIPE, \
+            stderr=subprocess.PIPE, \
             env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
-    raw_list = run.stdout
+    raw_list = run.stdout.decode(sys.stdout.encoding)
+    if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
+        # TODO: mount cleanup function here possibly
+        print("Cannot unlock repository. Your system may be performing a backup. Try again in a few minutes.")
+        sys.exit(1)
     arr_list = raw_list.splitlines()
     return arr_list
 
@@ -51,9 +56,8 @@ def store_backup_info(backup_array):
     all_backups = []
     for backup in backup_array:
         # parse backup info
-        decoded = backup.decode(sys.stdout.encoding)
-        name = re.match("[^\s]*", decoded).group()
-        raw_date = re.search(r'\s\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}', decoded).group()
+        name = re.match("[^\s]*", backup).group()
+        raw_date = re.search(r'\s\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}', backup).group()
         date_time = datetime.datetime.strptime(raw_date, ' %Y-%m-%d %H:%M:%S')
 
         # add backup object to list
