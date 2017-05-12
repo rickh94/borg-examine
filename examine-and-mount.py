@@ -4,11 +4,6 @@
 # not be possible until it is umounted. If placed on a system where backups are automated, a daemon or cron job should
 # check periodically for mounted borgfs.
 
-# TODO: import config file (borrow borgmatic's code).
-
-# TODO: rescue failure to break lock
-# TODO: prune down available backups interactively.
-# TODO: functions for finding and extracting single file.
 import os, subprocess, pprint, re, sys, datetime, atexit
 repo = 'backup-test:borgmatic-test'
 borg_path = '/usr/bin/borg'
@@ -44,7 +39,6 @@ def backup_list():
             env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
     raw_list = run.stdout.decode(sys.stdout.encoding)
     if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
-        # TODO: mount cleanup function here possibly
         print("Cannot unlock repository. Your system may be performing a backup. Try again in a few minutes.")
         sys.exit(1)
     arr_list = raw_list.splitlines()
