@@ -7,3 +7,6 @@
 
 # backup files
 *.bak
+
+#pycache directory
+__pycache__
