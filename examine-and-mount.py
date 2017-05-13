@@ -61,6 +61,7 @@ def store_backup_info(backup_array):
     return all_backups
 
 
+# choose a backup to examine.
 def choose_examine(backups):
     i = 0
     print("Backups are available from these times/dates: ")
@@ -71,9 +72,11 @@ def choose_examine(backups):
     number = input("Type the number of the backup you would like to examine. ")
     backups[int(number)].mount(my_mountpoint)
 
+# cleanup mounted filesystem
 def cleanup():
     subprocess.run([borg_path, 'umount', my_mountpoint])
 
+# check if user found file and run again or exit.
 def done():
     print("Your backup is available at", str(my_mountpoint) + '.', "Please copy any files and return to this program")
     while True:
@@ -84,6 +87,7 @@ def done():
             print("Please type [y]es or [n]o")
 
 
+# actual function calls
 atexit.register(cleanup)
 backups = store_backup_info(backup_list())
 while True:
