@@ -27,6 +27,8 @@ class Backup:
 
     # mount the backup.
     def mount(self, mount_point):
+        if not os.path.exists(mount_point):
+            os.mkdir(mount_point)
         run = subprocess.run([borg_path, 'mount', repo + '::' + self.name, mount_point], \
                 env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
 
