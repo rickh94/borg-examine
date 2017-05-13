@@ -39,7 +39,7 @@ def backup_list():
             env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
     raw_list = run.stdout.decode(sys.stdout.encoding)
     if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
-        print("Cannot unlock repository. Your system may be performing a backup. Try again in a few minutes.")
+        print("Cannot unlock repository: Your system may be performing a backup. Please try again in a few minutes.")
         sys.exit(1)
     arr_list = raw_list.splitlines()
     return arr_list
