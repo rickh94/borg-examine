@@ -1,6 +1,4 @@
-automatically umount on exit (CRUCIAL)
 import config file (same file as borgmatic? borrow code?)
-rescue failure to break lock
 
 push to testing
 
