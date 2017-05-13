@@ -5,11 +5,21 @@
 # check periodically for mounted borgfs.
 
 import os, subprocess, pprint, re, sys, datetime, atexit
-repo = 'backup-test:borgmatic-test'
-borg_path = '/usr/bin/borg'
-borg_passphrase = 'testing123'
-my_mountpoint = '/home/rick/recover_mount'
+import config
+# repo = 'backup-test:borgmatic-test'
+# borg_path = '/usr/bin/borg'
+# borg_passphrase = 'testing123'
+# my_mountpoint = '/home/rick/recover_mount'
+# repo_path = '/var/tmp/tmp-repo'
+# borg_path = '/usr/bin/borg'
+# mountpoint = '/home/rick/recover_mount'
+# passphrase = 'testing123'
 
+# config.parseconfig()
+# repo_path = config.repo_path
+# borg_path = config.borg_path
+# passphrase = config.passphrase
+# mountpoint = config.mountpoint
 # backup class for storing/retrieving info about backups
 class Backup:
     def __init__(self, name, date_time):
@@ -26,17 +36,18 @@ class Backup:
             return str(self.date_time.strftime("%a, %b %d, %Y at %I:%M %p"))
 
     # mount the backup.
-    def mount(self, mount_point):
-        run = subprocess.run([borg_path, 'mount', repo + '::' + self.name, mount_point], \
-                env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
+    def mount(self, options):
+        if not os.path.exists(options['mountpoint']):
+            os.mkdir(options['mountpoint'])
+        run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, options['mountpoint']], \
+                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
 
-
-def backup_list():
+def backup_list(repopath, passphrase):
     # get list from backup repo
-    run = subprocess.run([borg_path, 'list', repo], \
+    run = subprocess.run(['borg', 'list', repopath], \
             stdout=subprocess.PIPE, \
             stderr=subprocess.PIPE, \
-            env=dict(os.environ, BORG_PASSPHRASE=borg_passphrase))
+            env=dict(os.environ, BORG_PASSPHRASE=passphrase))
     raw_list = run.stdout.decode(sys.stdout.encoding)
     if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
         print("Cannot unlock repository: Your system may be performing a backup. Please try again in a few minutes.")
@@ -70,15 +81,17 @@ def choose_examine(backups):
         print('{:>4} {:<}'.format(*output))
         i += 1
     number = input("Type the number of the backup you would like to examine. ")
-    backups[int(number)].mount(my_mountpoint)
+    return int(number)
+
 
 # cleanup mounted filesystem
-def cleanup():
-    subprocess.run([borg_path, 'umount', my_mountpoint])
+def cleanup(mountpoint):
+    subprocess.run(['borg', 'umount', mountpoint])
 
 # check if user found file and run again or exit.
-def done():
-    print("Your backup is available at", str(my_mountpoint) + '.', "Please copy any files and return to this program")
+def done(mountpoint):
+    print("Your backup is available at {}. Please copy any files and return to this program"\
+            .format(mountpoint))
     while True:
         yn = input("Did you find what you were looking for?[y/n]")
         try:
@@ -87,14 +100,20 @@ def done():
             print("Please type [y]es or [n]o")
 
 
-# actual function calls
-atexit.register(cleanup)
-backups = store_backup_info(backup_list())
-while True:
-    choose_examine(backups)
-    if done():
-        print("Great. Your backup is being unmounted.")
-        break
-    else:
-        print("Let's try a different backup.")
-        cleanup()
+def main():
+    options = config.parseconfig()
+    atexit.register(cleanup, options['mountpoint'])
+    all_backups = backup_list(options['repopath'], options['passphrase']) 
+    backups_clean = store_backup_info(all_backups)
+    while True:
+        b = choose_examine(backups_clean)
+        backups_clean[b].mount(options)
+        if done(options['mountpoint']):
+            print("Great. Your backup is being unmounted.")
+            break
+        else:
+            print("Let's try a different backup.")
+            cleanup(options['mountpoint'])
+
+if __name__ == "__main__":
+    main()
