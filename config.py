@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
-import os, configparser
+import os, configparser, sys
 
 def parseconfig():
     config = configparser.ConfigParser()
@@ -41,6 +41,7 @@ def parseconfig():
                     .format(config_path))
         except PermissionError:
             print("Cannot write to {}. Please change ownership/permissions and try again.".format(config_path))
+            sys.exit()
 
     # read configuration file
     config.read(config_path)
