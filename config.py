@@ -33,11 +33,14 @@ def parseconfig():
             config['Recovery']['Extractpoint'] = default_extract_path
 
         config['System']['OpenCommand'] = input("Please enter a shell command for opening files and folders.\n")
-        if not os.path.exists(home + '/.config/borg-examine'): os.makedirs(home + '/.config/borg-examine')
-        with open(config_path, 'w') as configfile:
-            config.write(configfile)
-        print("Your configuration file has been written. It can be edited at any time at {}"\
-                .format(config_path))
+        try:
+            if not os.path.exists(home + '/.config/borg-examine'): os.makedirs(home + '/.config/borg-examine')
+            with open(config_path, 'w') as configfile:
+                config.write(configfile)
+            print("Your configuration file has been written. It can be edited at any time at {}"\
+                    .format(config_path))
+        except PermissionError:
+            print("Cannot write to {}. Please change ownership/permissions and try again.".format(config_path))
 
     # read configuration file
     config.read(config_path)
