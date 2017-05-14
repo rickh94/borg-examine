@@ -6,20 +6,7 @@
 
 import os, subprocess, pprint, re, sys, datetime, atexit
 import config
-# repo = 'backup-test:borgmatic-test'
-# borg_path = '/usr/bin/borg'
-# borg_passphrase = 'testing123'
-# my_mountpoint = '/home/rick/recover_mount'
-# repo_path = '/var/tmp/tmp-repo'
-# borg_path = '/usr/bin/borg'
-# mountpoint = '/home/rick/recover_mount'
-# passphrase = 'testing123'
 
-# config.parseconfig()
-# repo_path = config.repo_path
-# borg_path = config.borg_path
-# passphrase = config.passphrase
-# mountpoint = config.mountpoint
 # backup class for storing/retrieving info about backups
 class Backup:
     def __init__(self, name, date_time):
