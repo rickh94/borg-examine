@@ -1,3 +1,4 @@
+add validation to config.py for repository, password.
 interactively prune choices for backups with user input
 
 allow extraction of single file instead of mounting (much safer lock-wise) and  rename recovered file and open for review
