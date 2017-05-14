@@ -19,31 +19,36 @@ def parseconfig():
         config['Repo']['Passphrase'] = input("Please enter your borg repo passphrase.\n")
 
         default_mnt_path = home + '/recover_mount'
-        yn = input("The default path for mounting backups is: {} . Is this ok?[yn]".format(default_mnt_path))
+        yn = input("The default path for mounting backups is: {}. Is this ok?[yn] ".format(default_mnt_path)).lower()
         while True:
             try:
-                if yn[0] == 'n' or yn[0] == 'N':
+                if yn[0] == 'n':
                     config['Recovery']['Mountpoint'] = input("Please enter the mountpoint you would like to use.\n")
                     break
-                else:
+                elif yn[0] == 'y':
                     config['Recovery']['Mountpoint'] = default_mnt_path
                     break
+                else:
+                    yn = input("Please enter [y]es or [n]o. ").lower()
             except IndexError:
-                yn = input("Please enter [y]es or [n]o. ")
+                yn = input("Please enter [y]es or [n]o. ").lower()
 
 
         default_extract_path = home + '/recovered_files'
-        yn = input("The default path for mounting backups is: {} . Is this ok?[yn]".format(default_extract_path))
+        yn = input("The default path for mounting backups is: {}. Is this ".format(default_extract_path) +
+                "ok?[yn] ").lower()
         while True:
             try:
-                if yn[0] == 'n' or yn[0] == 'N':
+                if yn[0] == 'n':
                     config['Recovery']['Extractpoint'] = input("Please enter the folder you would like to use.\n")
                     break
-                else:
+                elif yn[0] == 'y':
                     config['Recovery']['Extractpoint'] = default_extract_path
                     break
+                else:
+                    yn = input("Please enter [y]es or [n]o. ").lower()
             except IndexError:
-                yn = input("Please enter [y]es or [n]o. ")
+                yn = input("Please enter [y]es or [n]o. ").lower()
 
         config['System']['OpenCommand'] = input("Please enter a shell command for opening files and folders.\n")
         try:
