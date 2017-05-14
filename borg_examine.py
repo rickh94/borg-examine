@@ -27,7 +27,7 @@ def cleanup(mountpoint):
 
 # check if user found file and run again or exit.
 def done(mountpoint, opencommand):
-    print("Your backup is available at {}. It will now open for you to find the"\
+    print("Your backup is available at {}. It will now open for you to find the" \
             .format(mountpoint), 
             "files you need and copy them out of the backup. When you are done", 
             "please return to this window to close the backup.")

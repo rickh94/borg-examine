@@ -21,8 +21,8 @@ class Backup:
     def mount(self, options):
         if not os.path.exists(options['mountpoint']):
             os.mkdir(options['mountpoint'])
-        run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, options['mountpoint']], \
-                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
+            options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
 
 def backup_list(repopath, passphrase):
     # get list from backup repo
@@ -32,7 +32,8 @@ def backup_list(repopath, passphrase):
             env=dict(os.environ, BORG_PASSPHRASE=passphrase))
     raw_list = run.stdout.decode(sys.stdout.encoding)
     if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
-        print("Cannot unlock repository: Your system may be performing a backup. Please try again in a few minutes.")
+        print("Cannot unlock repository: Your system may be performing a backup.",
+        "Please try again in a few minutes.")
         sys.exit(1)
     arr_list = raw_list.splitlines()
     return arr_list
