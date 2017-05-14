@@ -26,9 +26,13 @@ def cleanup(mountpoint):
     subprocess.run(['borg', 'umount', mountpoint])
 
 # check if user found file and run again or exit.
-def done(mountpoint):
-    print("Your backup is available at {}. Please copy any files and return to this program"\
-            .format(mountpoint))
+def done(mountpoint, opencommand):
+    print("Your backup is available at {}. It will now open for you to find the"\
+            .format(mountpoint), 
+            "files you need and copy them out of the backup. When you are done", 
+            "please return to this window to close the backup.")
+    trash = input("Press [enter] to continue.")
+    subprocess.Popen([opencommand, mountpoint])
     while True:
         yn = input("Did you find what you were looking for?[y/n]")
         try:
@@ -45,7 +49,7 @@ def main():
     while True:
         b = choose_examine(backups_clean)
         backups_clean[b].mount(options)
-        if done(options['mountpoint']):
+        if done(options['mountpoint'], options['opencommand']):
             print("Great. Your backup is being unmounted.")
             break
         else:
