@@ -20,17 +20,30 @@ def parseconfig():
 
         default_mnt_path = home + '/recover_mount'
         yn = input("The default path for mounting backups is: {} . Is this ok?[yn]".format(default_mnt_path))
-        if yn[0] == 'n' or yn[0] == 'N':
-            config['Recovery']['Mountpoint'] = input("Please enter the mountpoint you would like to use.\n")
-        else:
-            config['Recovery']['Mountpoint'] = default_mnt_path
+        while True:
+            try:
+                if yn[0] == 'n' or yn[0] == 'N':
+                    config['Recovery']['Mountpoint'] = input("Please enter the mountpoint you would like to use.\n")
+                    break
+                else:
+                    config['Recovery']['Mountpoint'] = default_mnt_path
+                    break
+            except IndexError:
+                yn = input("Please enter [y]es or [n]o. ")
+
 
         default_extract_path = home + '/recovered_files'
         yn = input("The default path for mounting backups is: {} . Is this ok?[yn]".format(default_extract_path))
-        if yn[0] == 'n' or yn[0] == 'N':
-            config['Recovery']['Extractpoint'] = input("Please enter the folder you would like to use.\n")
-        else:
-            config['Recovery']['Extractpoint'] = default_extract_path
+        while True:
+            try:
+                if yn[0] == 'n' or yn[0] == 'N':
+                    config['Recovery']['Extractpoint'] = input("Please enter the folder you would like to use.\n")
+                    break
+                else:
+                    config['Recovery']['Extractpoint'] = default_extract_path
+                    break
+            except IndexError:
+                yn = input("Please enter [y]es or [n]o. ")
 
         config['System']['OpenCommand'] = input("Please enter a shell command for opening files and folders.\n")
         try:
