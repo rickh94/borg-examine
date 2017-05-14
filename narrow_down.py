@@ -30,7 +30,7 @@ def narrow_down(backups):
     tests = {'2': 'today', '3': 'yesterday', '4': 'last week', '5': 'older'}
     chosen = []
     if choice == '1':
-        return backups[-1]
+        return [backups[-1]]
     else:
         for b in backups:
             if choose(b, tests[choice]):
@@ -45,6 +45,6 @@ def choose(backup, test):
     elif test == 'yesterday':
         return bool(backup.date_time.date() == yesterday)
     elif test == 'last week':
-        return bool(yesterday < backup.date_time.date() < last_week)
+        return bool(yesterday > backup.date_time.date() > last_week)
     elif test == 'older':
-        return bool(backup.date_time.date() > last_week)
+        return bool(backup.date_time.date() < last_week)

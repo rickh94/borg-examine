@@ -12,6 +12,8 @@ import narrow_down
 
 # choose a backup to examine.
 def choose_examine(backups):
+    if len(backups) == 1:
+        return 0
     i = 0
     print("Backups are available from these times/dates: ")
     for b in backups:

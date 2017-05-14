@@ -19,6 +19,7 @@ class Backup:
 
     # mount the backup.
     def mount(self, options):
+        print("Please wait a moment, your backup is being retrieved.")
         if not os.path.exists(options['mountpoint']):
             os.mkdir(options['mountpoint'])
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
