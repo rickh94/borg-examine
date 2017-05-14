@@ -7,6 +7,7 @@
 import os, subprocess, pprint, re, sys, datetime, atexit
 import config
 import get_backups
+import narrow_down
 
 
 # choose a backup to examine.
@@ -46,8 +47,9 @@ def main():
     atexit.register(cleanup, options['mountpoint'])
     all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
     backups_clean = get_backups.store_backup_info(all_backups)
+    fewer = narrow_down.narrow_down(backups_clean)
     while True:
-        b = choose_examine(backups_clean)
+        b = choose_examine(fewer)
         backups_clean[b].mount(options)
         if done(options['mountpoint'], options['opencommand']):
             print("Great. Your backup is being unmounted.")
