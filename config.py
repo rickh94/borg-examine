@@ -64,7 +64,6 @@ def parseconfig():
     # read configuration file
     config.read(config_path)
 
-
     options = {'repopath': config['Repo']['Path'],
             'passphrase': config['Repo']['passphrase'],
             'mountpoint': config['Recovery']['mountpoint'],

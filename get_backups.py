@@ -31,32 +31,34 @@ def backup_list(repopath, passphrase):
             stdout=subprocess.PIPE, \
             stderr=subprocess.STDOUT, \
             env=dict(os.environ, BORG_PASSPHRASE=passphrase))
-    # raw_list = run.stdout
     ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
-    if int(ret[1]) != 0:
-        print("Something has gone wrong:")
-        if "LockTimeout" in ret[0]:
-            print("Lock Error: Your system may be performing a backup.",
-            "Please try again in a few minutes.")
-            sys.exit(1)
-        elif "passphrase" in ret[0]:
-            print("Passphrase Error: Check that your passphrase is correct in your config file and try again.",
-                    "You can also delete the config file and a new one will be created next time you run this program.")
-            sys.exit(1)
-        elif "valid" in ret[0]:
-            print("Repository Error: Check that the repository path is correct in your config file and",
-                    "try again. You can also delete the config file and a new one will be",
-                    "created next time you run this program.")
-            sys.exit(1)
-        elif "remote" in ret[0]:
-            print("Server Error: Check your connection to your backup server and try again.")
-            sys.exit(1)
-        else:
-            print("An unknown error has occurred. Details follow:")
-            print(ret[0])
-            sys.exit(1)
+    if int(ret[1]) != 0: catch_borg_errors(ret)
     arr_list = ret[0].splitlines()
     return arr_list
+
+# TODO: change into Exception classes and use raise to raise them.
+def catch_borg_errors(ret):
+        if "LockTimeout" in ret[0]:
+            error = "LockError"
+            message = "Your system may be performing a backup. " +\
+                    "Please try again in a few minutes."
+        elif "passphrase" in ret[0]:
+            error = "PassphraseError"
+            message = "Check that your passphrase is correct in your config file and try again. " +\
+                    "You can also delete the config file and a new one will be created next time you run this program."
+        elif "valid" in ret[0]:
+            error = "RepositoryError"
+            message = "Check that the repository path is correct in your config file and " +\
+                    "try again. You may also delete the config file and a new one will be " +\
+                    "created next time you run this program."
+        elif "remote" in ret[0]:
+            error = "ServerError"
+            message = "Check your connection to your backup server and try again."
+        else:
+            error = "UnknownError"
+            message = "An unknown error has occurred. The error message from borg follows:\n" + ret[0]
+        print(error + ':', message)
+        sys.exit(1)
 
 
 def store_backup_info(backup_array):

@@ -18,7 +18,6 @@ def choose_examine(backups):
     print("Backups are available from these times/dates: ")
     for b in backups:
         output = ['(' + str(i) + ')', b.pretty_date()]
-        print('{:>4} {:<}'.format(*output))
         i += 1
     number = input("Type the number of the backup you would like to examine. ")
     return int(number)
