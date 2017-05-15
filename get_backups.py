@@ -27,16 +27,35 @@ class Backup:
 
 def backup_list(repopath, passphrase):
     # get list from backup repo
-    run = subprocess.run(['borg', 'list', repopath], \
+    run = subprocess.Popen(['borg', 'list', repopath], \
             stdout=subprocess.PIPE, \
-            stderr=subprocess.PIPE, \
+            stderr=subprocess.STDOUT, \
             env=dict(os.environ, BORG_PASSPHRASE=passphrase))
-    raw_list = run.stdout.decode(sys.stdout.encoding)
-    if "LockTimeout" in run.stderr.decode(sys.stderr.encoding):
-        print("Cannot unlock repository: Your system may be performing a backup.",
-        "Please try again in a few minutes.")
-        sys.exit(1)
-    arr_list = raw_list.splitlines()
+    # raw_list = run.stdout
+    ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
+    if int(ret[1]) != 0:
+        print("Something has gone wrong:")
+        if "LockTimeout" in ret[0]:
+            print("Lock Error: Your system may be performing a backup.",
+            "Please try again in a few minutes.")
+            sys.exit(1)
+        elif "passphrase" in ret[0]:
+            print("Passphrase Error: Check that your passphrase is correct in your config file and try again.",
+                    "You can also delete the config file and a new one will be created next time you run this program.")
+            sys.exit(1)
+        elif "valid" in ret[0]:
+            print("Repository Error: Check that the repository path is correct in your config file and",
+                    "try again. You can also delete the config file and a new one will be",
+                    "created next time you run this program.")
+            sys.exit(1)
+        elif "remote" in ret[0]:
+            print("Server Error: Check your connection to your backup server and try again.")
+            sys.exit(1)
+        else:
+            print("An unknown error has occurred. Details follow:")
+            print(ret[0])
+            sys.exit(1)
+    arr_list = ret[0].splitlines()
     return arr_list
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
-import os, configparser, sys
+import os, configparser, sys, subprocess
 
 def parseconfig():
     config = configparser.ConfigParser()
@@ -63,6 +63,7 @@ def parseconfig():
 
     # read configuration file
     config.read(config_path)
+
 
     options = {'repopath': config['Repo']['Path'],
             'passphrase': config['Repo']['passphrase'],
