@@ -14,9 +14,9 @@ some point but not at the moment.
 
 ## Configuration
 Configuration is handled by a borg-examine.conf held in
-$HOME/.config/borg-examine/. You can edit the example provided or the script
+`$HOME/.config/borg-examine/`. You can edit the example provided or the script
 will help you created one interactively if it is not found. If your user does
-not have write access to the .config directory, it will raise and error.
+not have write access to the `.config` directory, it will raise an error.
 Change the ownership or permissions and it will work correctly.
 
 ## Dependencies
