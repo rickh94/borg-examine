@@ -11,13 +11,16 @@ def parseconfig():
     if not os.path.isfile(config_path):
         print("No configuration file found. Let's create one now.")
 
+        # create sections
         config['Repo'] = {}
         config['Recovery'] = {}
         config['System'] = {}
 
+        # get input from user
         config['Repo']['Path'] = input("Please enter the full path to your borg repository.\n")
         config['Repo']['Passphrase'] = input("Please enter your borg repo passphrase.\n")
 
+        # offer defaults to user if not available.
         default_mnt_path = home + '/recover_mount'
         yn = input("The default path for mounting backups is: {}. Is this ok?[yn] ".format(default_mnt_path)).lower()
         while True:
@@ -50,6 +53,7 @@ def parseconfig():
             except IndexError:
                 yn = input("Please enter [y]es or [n]o. ").lower()
 
+        # shell level command to be run when opening directories.
         config['System']['OpenCommand'] = input("Please enter a shell command for opening files and folders.\n")
         try:
             if not os.path.exists(home + '/.config/borg-examine'): os.makedirs(home + '/.config/borg-examine')

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# interactive file recovery for borg backup
+# borg_examine.py - main functions for interactive file recovery from borg backup archive. Borg backup is required.
 # NOTE: When not properly shutdown, this will leave a backup mounted and the repository locked and further backups will
 # not be possible until it is umounted. If placed on a system where backups are automated, a daemon or cron job should
 # check periodically for mounted borgfs.
@@ -47,7 +47,7 @@ def main():
     options = config.parseconfig()
     atexit.register(cleanup, options['mountpoint'])
     all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
-    backups_clean = get_backups.store_backup_info(all_backups)
+    backups_clean = get_backups.parse_backup_info(all_backups)
     fewer = narrow_down.narrow_down(backups_clean)
     while True:
         b = choose_examine(fewer)
