@@ -3,9 +3,11 @@
 
 import os, subprocess, datetime, re, sys
 
+# Exception raised when borg list is not successfully completed.
 class AccessError(Exception):
     pass
 
+# Class for storing information about backups in a repo.
 class Backup:
     def __init__(self, name, date_time):
         self.name = name
@@ -22,7 +24,9 @@ class Backup:
 
     # mount the backup.
     def mount(self, options):
+        # A nice message in case it takes a while
         print("Please wait a moment, your backup is being retrieved.")
+        # create the mountpoint if it doesn't already exist
         if not os.path.exists(options['mountpoint']):
             os.mkdir(options['mountpoint'])
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
@@ -35,11 +39,14 @@ def backup_list(repopath, passphrase):
             stderr=subprocess.STDOUT, \
             env=dict(os.environ, BORG_PASSPHRASE=passphrase))
     ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
+    # stop program if list doesn't properly get a list
     if int(ret[1]) != 0: catch_borg_errors(ret)
     arr_list = ret[0].splitlines()
+    # return array, at this point just a text dump of each backup
     return arr_list
 
 def catch_borg_errors(ret):
+    # possible problems created running borg list. Hack-y, but it works.
     messages = {
             'LockTimeout': 'Cannot unlock repository. Backup may be in progress. Try again in a few minutes.',
             'passphrase': 'Passphrase was rejected. Update config file and try again.',
@@ -48,11 +55,12 @@ def catch_borg_errors(ret):
             'remote': 'Connection to backup server failed. Check network connection.',
             'other': 'An unknown error has occurred: ' + ret[0] 
             }
+    # check for possible issues and raise an error if they arise.
     for k, v in messages.items():
-        if k in ret[0]: raise AccessError(messages[k])
+        if k in ret[0]: raise AccessError(v)
 
 
-def store_backup_info(backup_array):
+def parse_backup_info(backup_array):
     # store information about each backup in backup objects
     all_backups = []
     for backup in backup_array:
@@ -65,4 +73,5 @@ def store_backup_info(backup_array):
         tmp = Backup(name, date_time)
         all_backups.append(tmp)
 
+    # now they're nice objects
     return all_backups
