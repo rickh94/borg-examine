@@ -3,6 +3,9 @@
 
 import os, subprocess, datetime, re, sys
 
+class AccessError(Exception):
+    pass
+
 class Backup:
     def __init__(self, name, date_time):
         self.name = name
@@ -36,29 +39,17 @@ def backup_list(repopath, passphrase):
     arr_list = ret[0].splitlines()
     return arr_list
 
-# TODO: change into Exception classes and use raise to raise them.
 def catch_borg_errors(ret):
-        if "LockTimeout" in ret[0]:
-            error = "LockError"
-            message = "Your system may be performing a backup. " +\
-                    "Please try again in a few minutes."
-        elif "passphrase" in ret[0]:
-            error = "PassphraseError"
-            message = "Check that your passphrase is correct in your config file and try again. " +\
-                    "You can also delete the config file and a new one will be created next time you run this program."
-        elif "valid" in ret[0]:
-            error = "RepositoryError"
-            message = "Check that the repository path is correct in your config file and " +\
-                    "try again. You may also delete the config file and a new one will be " +\
-                    "created next time you run this program."
-        elif "remote" in ret[0]:
-            error = "ServerError"
-            message = "Check your connection to your backup server and try again."
-        else:
-            error = "UnknownError"
-            message = "An unknown error has occurred. The error message from borg follows:\n" + ret[0]
-        print(error + ':', message)
-        sys.exit(1)
+    messages = {
+            'LockTimeout': 'Cannot unlock repository. Backup may be in progress. Try again in a few minutes.',
+            'passphrase': 'Passphrase was rejected. Update config file and try again.',
+            'valid': 'The repository in your config file does not appear to be valid. Please correct it.',
+            'exist': 'The repository in your config file does not exist. Please correct.',
+            'remote': 'Connection to backup server failed. Check network connection.',
+            'other': 'An unknown error has occurred: ' + ret[0] 
+            }
+    for k, v in messages.items():
+        if k in ret[0]: raise AccessError(messages[k])
 
 
 def store_backup_info(backup_array):
