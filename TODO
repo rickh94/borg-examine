@@ -4,5 +4,7 @@ allow extraction of single file instead of mounting (much safer lock-wise) and  
 wait to close until user has confirmed file, give option to try again if it is
 wrong - In Progress
 
+Implement a resume function so that paramaters specified so far aren't lost by LockTimeout
+
 create a gui front end to handle all of this. cross platform. web-based?
 
