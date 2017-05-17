@@ -12,12 +12,15 @@ import narrow_down
 
 # choose a backup to examine.
 def choose_examine(backups):
+    # for b in backups:
+    #     print(b.pretty_date())
     if len(backups) == 1:
         return 0
     i = 0
     print("Backups are available from these times/dates: ")
     for b in backups:
         output = ['(' + str(i) + ')', b.pretty_date()]
+        print("{:<4} {:<}".format(*output))
         i += 1
     number = input("Type the number of the backup you would like to examine. ")
     return int(number)
@@ -44,13 +47,25 @@ def done(mountpoint, opencommand):
 
 
 def main():
+    # get configuration out of config file
     options = config.parseconfig()
+    # cleanup function. Mounted backups will prevent any backups until unmount or reboot.
     atexit.register(cleanup, options['mountpoint'])
+    # get the actual backups
     all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
+    # store the backups nicely
     backups_clean = get_backups.parse_backup_info(all_backups)
+    # narrow down the backups
     fewer = narrow_down.narrow_down(backups_clean)
     while True:
+        # choose one backup to look at
+        # NOTE: If list of backups is short enough, looping through all chosen backups may be viable.
         b = choose_examine(fewer)
+        search_regex = get_backups.get_filename()
+        
+        backups_clean[b].extract_file(options, search_regex)
+
+        """
         backups_clean[b].mount(options)
         if done(options['mountpoint'], options['opencommand']):
             print("Great. Your backup is being unmounted.")
@@ -58,6 +73,7 @@ def main():
         else:
             print("Let's try a different backup.")
             cleanup(options['mountpoint'])
+        """
 
 if __name__ == "__main__":
     main()
