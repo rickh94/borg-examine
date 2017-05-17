@@ -46,6 +46,7 @@ class Backup:
         # catch errors
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
         files = file_regex.findall(str(backup_list[0]))
+        print("Here are the files that match your search in the chosen backup.")
         for f in files:
             print(f)
 
