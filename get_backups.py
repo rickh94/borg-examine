@@ -32,6 +32,32 @@ class Backup:
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
             options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
 
+    def extract_file(self, options, file_regex):
+        # get list of files from backup
+        make_list = subprocess.Popen(['borg', 'list', options['repopath'] + '::' + self.name], \
+                stdout=subprocess.PIPE, \
+                stderr=subprocess.STDOUT, \
+                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        # store output and return code
+        backup_list = make_list.communicate()[0].decode(sys.stdout.encoding),make_list.returncode
+        # TODO: force it to sleep in case it is a timeout so that user doesn't
+        # have to go through everything again. Or write progress to a file so
+        # that it can be resumed from previous run.
+        # catch errors
+        if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
+        files = file_regex.findall(str(backup_list[0]))
+        for f in files:
+            print(f)
+
+def get_filename():
+    # get input and clean it for use in regex
+    filename = input("Please enter all or part of the filename you are looking for: ")
+    filename = re.escape(filename.strip())
+    # create regex that will return entire line from borg list based on user input
+    file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
+    return file_regex
+
+
 def backup_list(repopath, passphrase):
     # get list from backup repo
     run = subprocess.Popen(['borg', 'list', repopath], \
