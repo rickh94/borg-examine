@@ -12,13 +12,13 @@ import narrow_down
 
 # choose a backup to examine.
 def choose_examine(backups):
-    # for b in backups:
-    #     print(b.pretty_date())
+    # auto return first backup if only one in array
     if len(backups) == 1:
         return 0
     i = 0
     print("Backups are available from these times/dates: ")
     for b in backups:
+        # number and format for printing
         output = ['(' + str(i) + ')', b.pretty_date()]
         print("{:<4} {:<}".format(*output))
         i += 1
@@ -36,9 +36,12 @@ def done(mountpoint, opencommand):
             .format(mountpoint), 
             "files you need and copy them out of the backup. When you are done", 
             "please return to this window to close the backup.")
+    # wait for user
     trash = input("Press [enter] to continue.")
+    # open mounted directory
     subprocess.Popen([opencommand, mountpoint])
     while True:
+        # return true or false for continuation or exit
         yn = input("Did you find what you were looking for?[y/n]")
         try:
             return bool(yn[0] == 'Y' or yn[0] == 'y')
@@ -61,7 +64,7 @@ def main():
         # choose one backup to look at
         # NOTE: If list of backups is short enough, looping through all chosen backups may be viable.
         b = choose_examine(fewer)
-        search_regex = get_backups.get_filename()
+        search_regex = get_backups.search_filename()
         
         backups_clean[b].extract_file(options, search_regex)
 

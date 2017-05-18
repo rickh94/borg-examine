@@ -10,7 +10,7 @@ last_week = (yesterday - datetime.timedelta(days=7))
 def narrow_down(backups):
     # user input
     yn = input("There are a large number of backups available in your repository. " +
-            "Would you like to narrow them down?[yn]")
+            "Would you like to narrow them down?[yn] ")
     while True:
         try:
             # return if the user wants to see full list
