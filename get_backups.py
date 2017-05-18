@@ -56,7 +56,8 @@ class Backup(DatedInfo):
         all_files = parse_file_info(raw_files)
         print("\nHere are the files that match your search in the chosen backup.")
         i = 0
-        for f in all_files:
+        while i < len(all_files):
+            f = all_files[i]
             # number and format for printing
             output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
             print("{:<4} {:<90} {:>10}".format(*output))

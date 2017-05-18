@@ -17,7 +17,8 @@ def choose_examine(backups):
         return 0
     i = 0
     print("Backups are available from these times/dates: ")
-    for b in backups:
+    while i < len(backups):
+        b = backups[i]
         # number and format for printing
         output = ['(' + str(i) + ')', b.pretty_date()]
         print("{:<4} {:<}".format(*output))
