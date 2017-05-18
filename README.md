@@ -41,3 +41,6 @@ not be able to access it without elevating privileges and files copied out may
 have permission issues as well. If you MUST run it as root, consider becoming
 root with `su -` or `sudo -s` instead of just running the script with sudo,
 just don't break anything.
+
+## Author
+Frederic Henry fredericmhenry@gmail.com
