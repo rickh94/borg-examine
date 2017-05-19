@@ -71,13 +71,13 @@ def main():
 
         """
         backups_clean[b].mount(options)
+        """
         if done(options['mountpoint'], options['opencommand']):
             print("Great. Your backup is being unmounted.")
             break
         else:
             print("Let's try a different backup.")
             cleanup(options['mountpoint'])
-        """
 
 if __name__ == "__main__":
     main()

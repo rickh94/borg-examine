@@ -1,9 +1,12 @@
-interactively prune choices for backups with user input - Mostly done
 
 allow extraction of single file instead of mounting (much safer lock-wise) and  rename recovered file and open for review
 wait to close until user has confirmed file, give option to try again if it is
 wrong - In Progress
 
+CLEANING:
+  clean up blocks with end of statements and comments
+  make file extraction more modular - move into FoundFile?
+  make a function for generating borg system calls more cleanly
 
 Implement a resume function so that paramaters specified so far aren't lost by LockTimeout
 
