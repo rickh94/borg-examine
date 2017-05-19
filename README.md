@@ -7,9 +7,10 @@ implementation stores repo password in clear text in a configuration file. If
 you are not comfortable with this, you can use key-based authorization (check
 borg's documentation for details).
 
-## Installation Copy the repository to somewhere in your path and make
-borg_examine.py executable or reference it with a shell script. I may generate
-byte-code at some point but not at the moment.
+## Installation 
+Copy the repository to somewhere in your path and make borg_examine.py
+executable or reference it with a shell script. I may generate "binaries" at
+some point but not at the moment.
 
 ## Configuration Configuration is handled by a borg-examine.conf held in
 `$HOME/.config/borg-examine/`. You can edit the example provided or the script
