@@ -30,8 +30,8 @@ class Backup(DatedInfo):
         # A nice message in case it takes a while
         print("Please wait a moment, your backup is being retrieved.")
         # create the mountpoint if it doesn't already exist
-        if not os.path.exists(options['mountpoint']):
-            os.mkdir(options['mountpoint'])
+        if not os.path.exists(options['mountpoint']): os.mkdir(options['mountpoint'])
+        # mount the backup
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
             options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
 
@@ -56,14 +56,52 @@ class Backup(DatedInfo):
         all_files = parse_file_info(raw_files)
         print("\nHere are the files that match your search in the chosen backup.")
         i = 0
+        # print out files
         while i < len(all_files):
             f = all_files[i]
             # number and format for printing
             output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
             print("{:<4} {:<90} {:>10}".format(*output))
             i += 1
+        # loop to validate input
+        while True:
+            extract_response = input("Enter the number of the file you would like to extract, or you can [S]earch again or " +
+                    "Check another [B]ackup. ")
+            # try to extract file at index, if other choice was made, error is raised and block is skipped
+            try:
+                file_num = int(extract_response)
+                # reset loop if file_num is not proper index
+                if not file_num < len(all_files):
+                    print("Invalid input.")
+                    continue
+                to_extract = all_files[file_num]
+                # make extraction dir if not found and change to it
+                ext_dir = options['extractdir']
+                if not os.path.exists(ext_dir): os.mkdir(ext_dir)
+                os.chdir(ext_dir)
+                # extract the file and rename it
+                subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
+                        env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+                os.rename(ext_dir + '/' + to_extract.name, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%dT%H-%M-%S-") + to_extract.name)
+                # wait for user confirmation to open restored file
+                trash = input("Press [enter] to see your extracted file.")
+                subprocess.run([options['opencommand'], ext_dir])
+                # check if file is correct and try again return failure or go back somewhere in loop
+                # return success
+                break
+            # executes if input is not int
+            except ValueError:
+                print("That's not ready yet, sorry")
+                """
+                if extract_response[0] == 'S' or extract_response == 's':
+                    # go back to parse_file_info and try again (enclose even more shit in a loop)
+                elif extract_response[0] == 'B' or extract_response == 'b':
+                    # return failure and go back to backups
+                # possibly also accept switching to mounting through different return code
+                """
 
 
+                
 
 class FoundFile(DatedInfo):
     pass
@@ -89,6 +127,7 @@ def parse_file_info(file_array):
         name = find_name[4:]
         all_files.append(FoundFile(name, date_time))
     return all_files
+
 
 ########## BACKUP FUNCTIONS SECTIONS ############
 def backup_list(repopath, passphrase):

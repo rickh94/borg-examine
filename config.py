@@ -43,10 +43,10 @@ def parseconfig():
         while True:
             try:
                 if yn[0] == 'n':
-                    config['Recovery']['Extractpoint'] = input("Please enter the folder you would like to use.\n")
+                    config['Recovery']['Extractdir'] = input("Please enter the folder you would like to use.\n")
                     break
                 elif yn[0] == 'y':
-                    config['Recovery']['Extractpoint'] = default_extract_path
+                    config['Recovery']['Extractdir'] = default_extract_path
                     break
                 else:
                     yn = input("Please enter [y]es or [n]o. ").lower()
@@ -71,7 +71,8 @@ def parseconfig():
     options = {'repopath': config['Repo']['Path'],
             'passphrase': config['Repo']['passphrase'],
             'mountpoint': config['Recovery']['mountpoint'],
-            'opencommand': config['System']['opencommand']
+            'opencommand': config['System']['opencommand'],
+            'extractdir': config['Recovery']['extractdir']
             }
 
     return options
