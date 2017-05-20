@@ -1,4 +1,4 @@
-# Borg Examine
+# Borgstractor
 This is an interactive python script for extracting files from borg backup
 repos. It is intended to help users who are not familiar with CLIs (my family)
 extract files from their backups without intervention as well as for anyone
