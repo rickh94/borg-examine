@@ -15,6 +15,7 @@ def choose_examine(backups):
     # auto return first backup if only one in array
     if len(backups) == 1:
         return 0
+    # end if
     i = 0
     print("Backups are available from these times/dates: ")
     while i < len(backups):
@@ -23,13 +24,16 @@ def choose_examine(backups):
         output = ['(' + str(i) + ')', b.pretty_date()]
         print("{:<4} {:<}".format(*output))
         i += 1
+    # end while 
     number = input("Type the number of the backup you would like to examine. ")
     return int(number)
+# end choose_examine
 
 
 # cleanup mounted filesystem
 def cleanup(mountpoint):
     subprocess.run(['borg', 'umount', mountpoint])
+# end cleanup
 
 # check if user found file and run again or exit.
 def done(mountpoint, opencommand):
@@ -48,6 +52,9 @@ def done(mountpoint, opencommand):
             return bool(yn[0] == 'Y' or yn[0] == 'y')
         except IndexError:
             print("Please type [y]es or [n]o")
+        # end try
+    # end while
+# end done
 
 
 def main():
@@ -78,6 +85,9 @@ def main():
         else:
             print("Let's try a different backup.")
             cleanup(options['mountpoint'])
+        # end if
+    # end while
+# end main
 
 if __name__ == "__main__":
     main()

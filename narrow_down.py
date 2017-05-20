@@ -20,6 +20,8 @@ def narrow_down(backups):
                 break
         except IndexError:
             yn = input("Please enter [y]es or [n]o.")
+        # end try
+    # end while
     
     while True:
         print("Would you like to see:")
@@ -32,6 +34,8 @@ def narrow_down(backups):
         # print options with keys
         for k, v in choices.items():
             print('(' + k + ')', v)
+        # end printing loop
+    # end while
 
         while True:
             choice = input("Please enter your choice: ")
@@ -39,6 +43,8 @@ def narrow_down(backups):
                 break
             else:
                 print("Out of range.")
+            # end validation if
+        # end validation loop
 
         # dictionary of tests for choose function
         tests = {'2': 'today', '3': 'yesterday', '4': 'last week', '5': 'older'}
@@ -50,11 +56,16 @@ def narrow_down(backups):
             for b in backups:
                 if choose(b, tests[choice]):
                     chosen.append(b)
+                # end if
+            # end for (for adding chosen backups to array)
+        # end if (chosing backups)
+
         # prevents empty list
         if len(chosen) == 0:
             print("No backups available from that time. Please choose a different time.") 
         else:
             break
+        # end available backups validation if
 
 
     return chosen
@@ -70,3 +81,5 @@ def choose(backup, test):
         return bool(yesterday > backup.date_time.date() > last_week)
     elif test == 'older':
         return bool(backup.date_time.date() < last_week)
+    # end tests if
+# end def choose

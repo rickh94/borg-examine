@@ -1,7 +1,5 @@
 
-allow extraction of single file instead of mounting (much safer lock-wise) and  rename recovered file and open for review
-wait to close until user has confirmed file, give option to try again if it is
-wrong - In Progress
+Add narrowing search functionality. (search within results)
 
 CLEANING:
   clean up blocks with end of statements and comments

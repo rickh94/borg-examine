@@ -13,6 +13,7 @@ class DatedInfo:
     def __init__(self, name, date_time):
         self.name = name
         self.date_time = date_time
+    # end def __init__
 
     # human readable date for printing
     def pretty_date(self):
@@ -22,6 +23,9 @@ class DatedInfo:
             return str(self.date_time.strftime("Yesterday at %I:%M %p"))
         else:
             return str(self.date_time.strftime("%a, %b %d, %Y at %I:%M %p"))
+        # end if
+    # end def pretty_date
+# end class DatedInfo
 
 # Class for storing information about backups in a repo.
 class Backup(DatedInfo):
@@ -34,6 +38,7 @@ class Backup(DatedInfo):
         # mount the backup
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
             options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+    # end def mount
 
     def extract_file(self, options, file_regex):
         # get list of files from backup
@@ -63,6 +68,8 @@ class Backup(DatedInfo):
             output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
             print("{:<4} {:<90} {:>10}".format(*output))
             i += 1
+        # end while (printing files)
+
         # loop to validate input
         while True:
             extract_response = input("Enter the number of the file you would like to extract, or you can [S]earch again or " +
@@ -74,6 +81,7 @@ class Backup(DatedInfo):
                 if not file_num < len(all_files):
                     print("Invalid input.")
                     continue
+                # end if
                 to_extract = all_files[file_num]
                 # make extraction dir if not found and change to it
                 ext_dir = options['extractdir']
@@ -99,6 +107,10 @@ class Backup(DatedInfo):
                     # return failure and go back to backups
                 # possibly also accept switching to mounting through different return code
                 """
+            # end try (for user input)
+        # end while (user input)
+    # end def extract_file
+# end Backup class
 
 
                 
@@ -114,6 +126,7 @@ def search_filename():
     # create regex that will return entire line from borg list based on user input
     file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
     return file_regex
+# end def search_filename
 
 def parse_file_info(file_array):
     all_files = []
@@ -126,7 +139,9 @@ def parse_file_info(file_array):
         # drop date part of regex
         name = find_name[4:]
         all_files.append(FoundFile(name, date_time))
+    # end for loop (making objects from array)
     return all_files
+# end def parse_file_info
 
 
 ########## BACKUP FUNCTIONS SECTIONS ############
@@ -142,6 +157,7 @@ def backup_list(repopath, passphrase):
     arr_list = ret[0].splitlines()
     # return array, at this point just a text dump of each backup
     return arr_list
+# end def backup_list
 
 
 def parse_backup_info(backup_array):
@@ -156,9 +172,10 @@ def parse_backup_info(backup_array):
         # add backup object to list
         tmp = Backup(name, date_time)
         all_backups.append(tmp)
+    # end for loop (storing info)
 
-    # now they're nice objects
     return all_backups
+# end def parse_backup_info
 
 ######## ERROR HANDLING FUNCTIONS #########
 def catch_borg_errors(ret):
@@ -174,4 +191,6 @@ def catch_borg_errors(ret):
     # check for possible issues and raise an error if they arise.
     for k, v in messages.items():
         if k in ret[0]: raise AccessError(v)
+    # end for loop to raise error
+# end def catch_borg_errors
 
