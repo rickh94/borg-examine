@@ -56,6 +56,8 @@ class Backup(DatedInfo):
         # catch errors
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
+        # TODO: loop for drill down search probably needs to start here. may need to move call to generate search inside this
+        # function.
         # create FoundFile objects
         raw_files = file_regex.findall(str(backup_list[0]))
         all_files = parse_file_info(raw_files)
