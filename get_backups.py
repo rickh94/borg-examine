@@ -58,10 +58,12 @@ class Backup(DatedInfo):
 
         # TODO: loop for drill down search probably needs to start here. may need to move call to generate search inside
         # this function.
-        # create FoundFile objects
+
+        # searches for initial list of files, creates objects, prints, returns array
         all_files = print_found_files(backup_list[0], file_regex)
 
         # loop to validate input
+
         while True:
             extract_response = input("Enter the number of the file you would like to extract, or you can [S]earch again or " +
                     "Check another [B]ackup. ")
