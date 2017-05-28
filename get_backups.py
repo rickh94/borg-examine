@@ -60,7 +60,9 @@ class Backup(DatedInfo):
         # this function.
 
         # searches for initial list of files, creates objects, prints, returns array
-        all_files = print_found_files(backup_list[0], file_regex)
+        all_files = find_files(backup_list[0], file_regex)
+        # TODO: catch no files found
+        print_found_files(all_files)
 
         # loop to validate input
 
@@ -174,19 +176,22 @@ def parse_backup_info(backup_array):
 
     return all_backups
 # end def parse_backup_info
-def print_found_files(file_list, regex):
+
+def find_files(file_list, regex):
     raw_files = regex.findall(str(file_list))
     all_files = parse_file_info(raw_files)
+    return all_files
+
+def print_found_files(file_list):
     print("\nHere are the files that match your search in the chosen backup.")
     i = 0
     # print out files
-    while i < len(all_files):
-        f = all_files[i]
+    while i < len(file_list):
+        f = file_list[i]
         # number and format for printing
         output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
         print("{:<4} {:<90} {:>10}".format(*output))
         i += 1
-    return all_files
     # end while (printing files)
 # end def print_found_files
 

@@ -74,7 +74,7 @@ def main():
         b = choose_examine(fewer)
         search_regex = get_backups.search_filename()
         
-        backups_clean[b].extract_file(options, search_regex)
+        fewer[b].extract_file(options, search_regex)
 
         """
         backups_clean[b].mount(options)
