@@ -58,7 +58,7 @@ def make_config_file(home, config, config_folder, config_path):
 
 
     default_extract_path = home + '/recovered_files'
-    yn = input("The default path for mounting backups is: {}. Is this ".format(default_extract_path) +
+    yn = input("The default path for recovering files is: {}. Is this ".format(default_extract_path) +
             "ok?[yn] ").lower()
     while True:
         try:
