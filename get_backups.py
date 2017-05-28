@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # class and functions for retrieving backup information.
 
-import os, subprocess, datetime, re, sys
+import os, subprocess, datetime, re, sys, shutil
 
 ######## CLASSES SECTION ##########
 
@@ -56,21 +56,10 @@ class Backup(DatedInfo):
         # catch errors
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
-        # TODO: loop for drill down search probably needs to start here. may need to move call to generate search inside this
-        # function.
+        # TODO: loop for drill down search probably needs to start here. may need to move call to generate search inside
+        # this function.
         # create FoundFile objects
-        raw_files = file_regex.findall(str(backup_list[0]))
-        all_files = parse_file_info(raw_files)
-        print("\nHere are the files that match your search in the chosen backup.")
-        i = 0
-        # print out files
-        while i < len(all_files):
-            f = all_files[i]
-            # number and format for printing
-            output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
-            print("{:<4} {:<90} {:>10}".format(*output))
-            i += 1
-        # end while (printing files)
+        all_files = print_found_files(backup_list[0], file_regex)
 
         # loop to validate input
         while True:
@@ -83,16 +72,20 @@ class Backup(DatedInfo):
                 if not file_num < len(all_files):
                     print("Invalid input.")
                     continue
+                else:
+                    print("Extracting your file...")
                 # end if
                 to_extract = all_files[file_num]
                 # make extraction dir if not found and change to it
                 ext_dir = options['extractdir']
                 if not os.path.exists(ext_dir): os.mkdir(ext_dir)
-                os.chdir(ext_dir)
+                os.chdir('/tmp')
                 # extract the file and rename it
                 subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
                         env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
-                os.rename(ext_dir + '/' + to_extract.name, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%dT%H-%M-%S-") + to_extract.name)
+                full_extract = '/tmp/' + to_extract.name
+                extracted_file_name = os.path.basename(full_extract)
+                shutil.move(full_extract, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%d_%H:%M:%S-") + extracted_file_name)
                 # wait for user confirmation to open restored file
                 trash = input("Press [enter] to see your extracted file.")
                 subprocess.run([options['opencommand'], ext_dir])
@@ -127,6 +120,7 @@ def search_filename():
     filename = re.escape(filename.strip())
     # create regex that will return entire line from borg list based on user input
     file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
+    print("\nSeaching for your file...")
     return file_regex
 # end def search_filename
 
@@ -178,6 +172,21 @@ def parse_backup_info(backup_array):
 
     return all_backups
 # end def parse_backup_info
+def print_found_files(file_list, regex):
+    raw_files = regex.findall(str(file_list))
+    all_files = parse_file_info(raw_files)
+    print("\nHere are the files that match your search in the chosen backup.")
+    i = 0
+    # print out files
+    while i < len(all_files):
+        f = all_files[i]
+        # number and format for printing
+        output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
+        print("{:<4} {:<90} {:>10}".format(*output))
+        i += 1
+    return all_files
+    # end while (printing files)
+# end def print_found_files
 
 ######## ERROR HANDLING FUNCTIONS #########
 def catch_borg_errors(ret):
