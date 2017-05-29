@@ -61,20 +61,23 @@ def main():
     # get configuration out of config file
     options = config.parseconfig()
     # cleanup function. Mounted backups will prevent any backups until unmount or reboot.
-    atexit.register(cleanup, options['mountpoint'])
+    # atexit.register(cleanup, options['mountpoint'])
     # get the actual backups
     all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
     # store the backups nicely
     backups_clean = get_backups.parse_backup_info(all_backups)
     # narrow down the backups
-    fewer = narrow_down.narrow_down(backups_clean)
     while True:
         # choose one backup to look at
         # NOTE: If list of backups is short enough, looping through all chosen backups may be viable.
+        fewer = narrow_down.narrow_down(backups_clean)
         b = choose_examine(fewer)
-        search_regex = get_backups.search_filename()
+        search_regex = get_backups.search_filename("Please enter the name of the file you are looking for: ")
         
-        fewer[b].extract_file(options, search_regex)
+        ret = fewer[b].extract_file(options, search_regex)
+        if ret == 1:
+            print("Returning to backups\n")
+            continue
 
         """
         backups_clean[b].mount(options)
@@ -84,7 +87,7 @@ def main():
             break
         else:
             print("Let's try a different backup.")
-            cleanup(options['mountpoint'])
+            # cleanup(options['mountpoint'])
         # end if
     # end while
 # end main
