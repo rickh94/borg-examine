@@ -57,9 +57,6 @@ class Backup(DatedInfo):
         # catch errors
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
-        # TODO: loop for drill down search probably needs to start here. may need to move call to generate search inside
-        # this function.
-
         # searches for initial list of files, creates objects, prints, returns array
         raw_files = find_files(backup_list[0], file_regex)
         all_files = parse_file_info(raw_files)
@@ -67,11 +64,10 @@ class Backup(DatedInfo):
         print_found_files(all_files)
 
         # loop to validate input
-
         while True:
-            extract_response = input("Enter the number of the file you would like to extract, or you can\n"+
-                    "search [W]ithin results,\nperform a [N]ew search of this backup\n" +
-                    "temporarily [M]ount this backup\nor check a different [B]ackup. ")
+            extract_response = input("Enter the number of the file you would like to extract, or:\n"+
+                    "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
+                    "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
             # try to extract file at index, if other choice was made, error is raised and block is skipped
             try:
                 file_num = int(extract_response)
@@ -98,28 +94,34 @@ class Backup(DatedInfo):
                 # wait for user confirmation to open restored file
                 trash = input("Press [enter] to see your extracted file.")
                 subprocess.run([options['opencommand'], ext_dir])
+
                 # check if file is correct and try again return failure or go back somewhere in loop
-                # return success
-                done = input("Would you like to:\nextract another [F]ile from this backup\n" +
-                        "extract a file from a [D]ifferent backup\n[E]xit this program")
-                # if done == 'F' or done == 'f':
-                    # extract_response =
-                return 0
+                done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
+                        "extract a file from a [D]ifferent backup\n\t[E]xit this program")
+                if done == 'F' or done == 'f':
+                    tmp_list = backup_list[0]
+                    new_files, all_files = new_search(tmp_list)
+                    continue
+                elif done == 'D' or done == 'd':
+                    return 1
+                elif done == 'E' or done == 'e':
+                    return 0
+                else:
+                    return 0
 
             # executes if input is not int
             except ValueError:
                 if extract_response[0] == 'N' or extract_response == 'n':
                     # new search
-                    search_regex = search_filename("\nPlease enter a new search term: ")
-                    new_files = find_files(backup_list[0], search_regex)
-                    all_files = parse_file_info(new_files)
-                    print_found_files(all_files)
+                    tmp_list = backup_list[0]
+                    new_files, all_files = new_search(tmp_list)
+                    # go back to extract response and try again
                     continue
                     # TODO: add option to extract another file
-                    # go back to parse_file_info and try again (enclose even more shit in a loop)
                 elif extract_response[0] == 'B' or extract_response == 'b':
-                    print("Go back to backups")
+                    print("Returning to backup selection.")
                     return 1
+                    # returns failure and a different backup can be selected
                 elif extract_response[0] == 'W' or extract_response[0] == 'w':
                     # search within
                     search_regex = search_filename("Please enter an additional search term: ")
@@ -138,8 +140,10 @@ class Backup(DatedInfo):
                     done = done_mounting(options['mountpoint'], options['opencommand'])
                     if done:
                         return 0
+                        # exits theh program
                     else:
                         return 1
+                        # returns to backup selection
                 else:
                     print("Invalid input")
                     continue
@@ -259,6 +263,13 @@ def print_found_files(file_list):
     # end while (printing files)
 # end def print_found_files
 
+def new_search(raw_file_list):
+    search_regex = search_filename("\nPlease enter a new search term: ")
+    new_files = find_files(raw_file_list, search_regex)
+    all_files = parse_file_info(new_files)
+    print_found_files(all_files)
+    return new_files, all_files
+
 ######## ERROR HANDLING FUNCTIONS #########
 def catch_borg_errors(ret):
     # possible problems created running borg list. Hack-y, but it works.
@@ -268,7 +279,7 @@ def catch_borg_errors(ret):
             'valid': 'The repository in your config file does not appear to be valid. Please correct it.',
             'exist': 'The repository in your config file does not exist. Please correct.',
             'remote': 'Connection to backup server failed. Check network connection.',
-            'other': 'An unknown error has occurred: ' + ret[0] 
+            'other': 'An unknown error has occurred. Printing borg traceback:\n' + ret[0] 
             }
     # check for possible issues and raise an error if they arise.
     for k, v in messages.items():
