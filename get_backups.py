@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # class and functions for retrieving backup information.
 
-import os, subprocess, datetime, re, sys, shutil
+import os, subprocess, datetime, re, sys, shutil, atexit
 
 ######## CLASSES SECTION ##########
 
@@ -35,6 +35,7 @@ class Backup(DatedInfo):
         print("Please wait a moment, your backup is being retrieved.")
         # create the mountpoint if it doesn't already exist
         if not os.path.exists(options['mountpoint']): os.mkdir(options['mountpoint'])
+        atexit.register(cleanup, options['mountpoint'])
         # mount the backup
         run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
             options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
@@ -68,8 +69,9 @@ class Backup(DatedInfo):
         # loop to validate input
 
         while True:
-            extract_response = input("Enter the number of the file you would like to extract, or you can search " +
-                    "[W]ithin results or perform a [N]ew search or check another [B]ackup. ")
+            extract_response = input("Enter the number of the file you would like to extract, or you can\n"+
+                    "search [W]ithin results,\nperform a [N]ew search of this backup\n" +
+                    "temporarily [M]ount this backup\nor check a different [B]ackup. ")
             # try to extract file at index, if other choice was made, error is raised and block is skipped
             try:
                 file_num = int(extract_response)
@@ -98,7 +100,11 @@ class Backup(DatedInfo):
                 subprocess.run([options['opencommand'], ext_dir])
                 # check if file is correct and try again return failure or go back somewhere in loop
                 # return success
-                break
+                done = input("Would you like to:\nextract another [F]ile from this backup\n" +
+                        "extract a file from a [D]ifferent backup\n[E]xit this program")
+                # if done == 'F' or done == 'f':
+                    # extract_response =
+                return 0
 
             # executes if input is not int
             except ValueError:
@@ -108,6 +114,7 @@ class Backup(DatedInfo):
                     new_files = find_files(backup_list[0], search_regex)
                     all_files = parse_file_info(new_files)
                     print_found_files(all_files)
+                    continue
                     # TODO: add option to extract another file
                     # go back to parse_file_info and try again (enclose even more shit in a loop)
                 elif extract_response[0] == 'B' or extract_response == 'b':
@@ -126,6 +133,13 @@ class Backup(DatedInfo):
                     print_found_files(all_files)
                     # back around for another pass
                     continue
+                elif extract_response[0] == 'M' or extract_response == 'm':
+                    self.mount(options)
+                    done = done_mounting(options['mountpoint'], options['opencommand'])
+                    if done:
+                        return 0
+                    else:
+                        return 1
                 else:
                     print("Invalid input")
                     continue
@@ -201,6 +215,32 @@ def parse_backup_info(backup_array):
 
     return all_backups
 # end def parse_backup_info
+
+# cleanup mounted filesystem
+def cleanup(mountpoint):
+    subprocess.run(['borg', 'umount', mountpoint])
+# end cleanup
+
+# check if user found file and run again or exit.
+def done_mounting(mountpoint, opencommand):
+    print("Your backup is available at {}. It will now open for you to find the" \
+            .format(mountpoint), 
+            "files you need and copy them out of the backup. When you are done", 
+            "please return to this window to close the backup.")
+    # wait for user
+    trash = input("Press [enter] to continue.")
+    # open mounted directory
+    subprocess.Popen([opencommand, mountpoint])
+    while True:
+        # return true or false for continuation or exit
+        yn = input("Did you find what you were looking for?[y/n]")
+        try:
+            return bool(yn[0] == 'Y' or yn[0] == 'y')
+        except IndexError:
+            print("Please type [y]es or [n]o")
+        # end try
+    # end while
+# end done
 
 def find_files(file_list, regex):
     raw_files = regex.findall(str(file_list))
