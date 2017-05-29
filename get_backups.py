@@ -108,6 +108,7 @@ class Backup(DatedInfo):
                     new_files = find_files(backup_list[0], search_regex)
                     all_files = parse_file_info(new_files)
                     print_found_files(all_files)
+                    # TODO: add option to extract another file
                     # go back to parse_file_info and try again (enclose even more shit in a loop)
                 elif extract_response[0] == 'B' or extract_response == 'b':
                     print("Go back to backups")

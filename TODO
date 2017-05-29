@@ -1,10 +1,8 @@
-
-Add narrowing search functionality. (search within results)
-
 CLEANING:
-  clean up blocks with end of statements and comments
-  make file extraction more modular - move into FoundFile?
   make a function for generating borg system calls more cleanly
+
+add option to extract another file.
+add option to mount selected backup instead of searching.
 
 Implement a resume function so that paramaters specified so far aren't lost by LockTimeout
 
