@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# borg_examine.py - main functions for interactive file recovery from borg backup archive. Borg backup is required.
+# borgstractor.py - main functions for interactive file recovery from borg backup archive. Borg backup is required.
 # NOTE: When not properly shutdown, this will leave a backup mounted and the repository locked and further backups will
 # not be possible until it is umounted. If placed on a system where backups are automated, a daemon or cron job should
 # check periodically for mounted borgfs.
