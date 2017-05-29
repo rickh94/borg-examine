@@ -65,7 +65,7 @@ class Backup(DatedInfo):
 
         # loop to validate input
         while True:
-            extract_response = input("Enter the number of the file you would like to extract, or:\n"+
+            extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
                     "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
                     "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
             # try to extract file at index, if other choice was made, error is raised and block is skipped
@@ -124,7 +124,8 @@ class Backup(DatedInfo):
                     # returns failure and a different backup can be selected
                 elif extract_response[0] == 'W' or extract_response[0] == 'w':
                     # search within
-                    search_regex = search_filename("Please enter an additional search term: ")
+                    search_regex = search_filename("Please enter an additional search term (a parent folder or " +
+                            "extension can narrow it down a lot): ")
                     # if this is not the second search performed, new files will exist and we should search within that
                     if new_files:
                         new_files = find_files("\n".join(new_files), search_regex)

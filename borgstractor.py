@@ -45,7 +45,7 @@ def main():
         # narrow down the backups
         fewer = narrow_down.narrow_down(backups_clean)
         b = choose_examine(fewer)
-        search_regex = get_backups.search_filename("Please enter the name of the file you are looking for: ")
+        search_regex = get_backups.search_filename("Please enter the name of the file/folder you are looking for: ")
         
         ret = fewer[b].extract_file(options, search_regex)
         if ret == 1:
