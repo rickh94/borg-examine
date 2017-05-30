@@ -1,5 +1,6 @@
 CLEANING:
   make a function for generating borg system calls more cleanly
+  rewrite README.md
 
 add error catching to all borg calls just in case.
 
