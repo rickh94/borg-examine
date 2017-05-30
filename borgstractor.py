@@ -16,24 +16,39 @@ def choose_examine(backups):
     if len(backups) == 1:
         return 0
     # end if
-    i = 0
+    i = 1
     print("Backups are available from these times/dates: ")
-    while i < len(backups):
-        b = backups[i]
+    while i <= len(backups):
+        b = backups[i - 1]
         # number and format for printing
         output = ['(' + str(i) + ')', b.pretty_date()]
         print("{:<4} {:<}".format(*output))
         i += 1
     # end while 
-    number = input("Type the number of the backup you would like to examine. ")
-    return int(number)
+    while True:
+        number = input("Type the number of the backup you would like to examine: ")
+        try:
+            if ((int(number) - 1) < len(backups)):
+                return (int(number) - 1)
+            else:
+                print("Out of range.")
+                continue
+        except (IndexError, ValueError, TypeError):
+            print("Invalid input.")
+            continue
+       
+    
 # end choose_examine
 
 
 def main():
+    print("Welcome to Borgstractor.")
+    print("Please follow the directions on the screen. Press Ctrl-C at any time to exit")
+    print("Reading configuration...")
     # get configuration out of config file
     options = config.parseconfig()
 
+    print("Retrieving backups...")
     # get the actual backups
     all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
 
@@ -49,7 +64,7 @@ def main():
         
         ret = fewer[b].extract_file(options, search_regex)
         if ret == 1:
-            print("Returning to backups\n")
+            print("\nReturning to backups...\n")
             continue
         elif ret == 0:
             print("Have a nice day")

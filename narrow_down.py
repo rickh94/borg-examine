@@ -39,30 +39,42 @@ def narrow_down(backups):
 
         while True:
             choice = input("Please enter your choice: ")
-            if choice[0] in choices:
-                break
-            else:
-                print("Out of range.")
-            # end validation if
+            try:
+                if choice[0] in choices:
+                    break
+                else:
+                    print("Out of range.")
+                # end validation if
+            except IndexError:
+                continue
+            # end input validation try
         # end validation loop
 
         # dictionary of tests for choose function
         tests = {'2': 'today', '3': 'yesterday', '4': 'last week', '5': 'older'}
         chosen = []
-        if choice == '1':
-            # returns last backup aka most recent
-            return [backups[-1]]
-        else:
-            for b in backups:
-                if choose(b, tests[choice]):
-                    chosen.append(b)
-                # end if
-            # end for (for adding chosen backups to array)
-        # end if (chosing backups)
+        try: 
+            if choice == '1':
+                # returns last backup aka most recent
+                return [backups[-1]]
+            else:
+                for b in backups:
+                    if choose(b, tests[choice]):
+                        chosen.append(b)
+                # end for (for adding chosen backups to array)
+            # end if (chosing backups)
+        except ValueError:
+            print("Invalid input.")
+            continue
+        except IndexError:
+            continue
+        # end try
+
+
 
         # prevents empty list
         if len(chosen) == 0:
-            print("No backups available from that time. Please choose a different time.") 
+            print("\nNo backups available from that time. Please choose a different time.") 
         else:
             break
         # end available backups validation if

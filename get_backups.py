@@ -37,7 +37,7 @@ class Backup(DatedInfo):
         if not os.path.exists(options['mountpoint']): os.mkdir(options['mountpoint'])
         atexit.register(cleanup, options['mountpoint'])
         # mount the backup
-        run = subprocess.run(['borg', 'mount', options['repopath'] + '::' + self.name, 
+        run = subprocess.Popen(['borg', 'mount', options['repopath'] + '::' + self.name, 
             options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
     # end def mount
 
@@ -96,58 +96,80 @@ class Backup(DatedInfo):
                 subprocess.run([options['opencommand'], ext_dir])
 
                 # check if file is correct and try again return failure or go back somewhere in loop
-                done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
-                        "extract a file from a [D]ifferent backup\n\t[E]xit this program")
-                if done == 'F' or done == 'f':
-                    tmp_list = backup_list[0]
-                    new_files, all_files = new_search(tmp_list)
-                    continue
-                elif done == 'D' or done == 'd':
-                    return 1
-                elif done == 'E' or done == 'e':
-                    return 0
-                else:
-                    return 0
+                while true:
+                    done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
+                            "extract a file from a [D]ifferent backup\n\t[E]xit this program")
+                    try:
+                        if done[0] == 'F' or done[0] == 'f':
+                            tmp_list = backup_list[0]
+                            new_files, all_files = new_search(tmp_list)
+                            break
+                        # different backup
+                        elif done[0] == 'D' or done[0] == 'd':
+                            return 1
+                        # done. exit
+                        elif done[0] == 'E' or done[0] == 'e':
+                            return 0
+                        else:
+                            done = input("Please enter your selection")
+                            continue
+                        # end if
+                    except IndexError:
+                        continue
+                    # end try
 
             # executes if input is not int
             except ValueError:
+                # new search
                 if extract_response[0] == 'N' or extract_response == 'n':
-                    # new search
                     tmp_list = backup_list[0]
                     new_files, all_files = new_search(tmp_list)
                     # go back to extract response and try again
                     continue
-                    # TODO: add option to extract another file
+
+                # returns failure and a different backup can be selected
                 elif extract_response[0] == 'B' or extract_response == 'b':
                     print("Returning to backup selection.")
                     return 1
-                    # returns failure and a different backup can be selected
                 elif extract_response[0] == 'W' or extract_response[0] == 'w':
                     # search within
                     search_regex = search_filename("Please enter an additional search term (a parent folder or " +
-                            "extension can narrow it down a lot): ")
-                    # if this is not the second search performed, new files will exist and we should search within that
-                    if new_files:
-                        new_files = find_files("\n".join(new_files), search_regex)
-                    else:
+                            "file extension can narrow it down a lot): ")
+                    # if this is not the second search performed, new_files will exist and we should search within that
+                    try:
+                        new_files
+                    except NameError:
+                        # in either case, join the array of raw file info back into a single text string so that the
+                        # original search function will work.
                         new_files = find_files("\n".join(raw_files), search_regex)
+                    else:
+                        new_files = find_files("\n".join(new_files), search_regex)
 
                     all_files = parse_file_info(new_files)
                     print_found_files(all_files)
                     # back around for another pass
                     continue
+
                 elif extract_response[0] == 'M' or extract_response == 'm':
+                    # mount that backup
                     self.mount(options)
                     done = done_mounting(options['mountpoint'], options['opencommand'])
                     if done:
                         return 0
-                        # exits theh program
+                        # exits the program
                     else:
+                        cleanup(options['mountpoint'])
                         return 1
                         # returns to backup selection
                 else:
                     print("Invalid input")
                     continue
+            except IndexError:
+                print("Please enter a response.")
+                continue
+            else:
+                print("Something has gone wrong.")
+                sys.exit(1)
                 # end if / elif for non-number input
             # end try (for user input)
         # end while (user input)
