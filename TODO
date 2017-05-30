@@ -1,8 +1,7 @@
 CLEANING:
   make a function for generating borg system calls more cleanly
 
-add option to extract another file.
-add option to mount selected backup instead of searching.
+add error catching to all borg calls just in case.
 
 Implement a resume function so that paramaters specified so far aren't lost by LockTimeout
 
