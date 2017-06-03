@@ -96,7 +96,7 @@ class Backup(DatedInfo):
                 subprocess.run([options['opencommand'], ext_dir])
 
                 # check if file is correct and try again return failure or go back somewhere in loop
-                while true:
+                while True:
                     done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
                             "extract a file from a [D]ifferent backup\n\t[E]xit this program")
                     try:
@@ -272,7 +272,6 @@ def done_mounting(mountpoint, opencommand):
 # end done
 
 def find_files(file_list, regex):
-    print("Starting search")
     while 1:
         raw_files = regex.findall(str(file_list))
         if len(raw_files) == 0:
