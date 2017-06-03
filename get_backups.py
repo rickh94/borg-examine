@@ -58,9 +58,14 @@ class Backup(DatedInfo):
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
         # searches for initial list of files, creates objects, prints, returns array
+        #optimization code
+        # time1 = datetime.datetime.now()
         raw_files = find_files(backup_list[0], file_regex)
+        # time2 = datetime.datetime.now()
+        # delta = time2 - time1
+        # print("search took {}".format(delta.total_seconds()))
+        # cont = input("hi")
         all_files = parse_file_info(raw_files)
-        # TODO: catch no files found
         print_found_files(all_files)
 
         # loop to validate input
