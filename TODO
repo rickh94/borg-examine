@@ -3,9 +3,14 @@ CLEANING:
   make a function for generating borg system calls more cleanly
   rewrite README.md
 
+  optimization ideas: start search in user home directory, if nothing found
+expand automatically, if found present options to extract with option to
+search outside home (more complicated than it sounds)
+
 add error catching to all borg calls just in case.
 
 Implement a resume function so that paramaters specified so far aren't lost by LockTimeout
 
 create a gui front end to handle all of this. cross platform. web-based?
 
+vim: se ft=text :
