@@ -118,55 +118,57 @@ class Backup(DatedInfo):
                         continue
                     # end try
 
+
             # executes if input is not int
             except ValueError:
-                # new search
-                if extract_response[0] == 'N' or extract_response == 'n':
-                    tmp_list = backup_list[0]
-                    new_files, all_files = new_search(tmp_list)
-                    # go back to extract response and try again
-                    continue
+                try:
+                    # new search
+                    if extract_response[0] == 'N' or extract_response == 'n':
+                        tmp_list = backup_list[0]
+                        new_files, all_files = new_search(tmp_list)
+                        # go back to extract response and try again
+                        continue
 
-                # returns failure and a different backup can be selected
-                elif extract_response[0] == 'B' or extract_response == 'b':
-                    print("Returning to backup selection.")
-                    return 1
-                elif extract_response[0] == 'W' or extract_response[0] == 'w':
-                    # search within
-                    search_regex = search_filename("Please enter an additional search term (a parent folder or " +
-                            "file extension can narrow it down a lot): ")
-                    # if this is not the second search performed, new_files will exist and we should search within that
-                    try:
-                        new_files
-                    except NameError:
-                        # in either case, join the array of raw file info back into a single text string so that the
-                        # original search function will work.
-                        new_files = find_files("\n".join(raw_files), search_regex)
-                    else:
-                        new_files = find_files("\n".join(new_files), search_regex)
-
-                    all_files = parse_file_info(new_files)
-                    print_found_files(all_files)
-                    # back around for another pass
-                    continue
-
-                elif extract_response[0] == 'M' or extract_response == 'm':
-                    # mount that backup
-                    self.mount(options)
-                    done = done_mounting(options['mountpoint'], options['opencommand'])
-                    if done:
-                        return 0
-                        # exits the program
-                    else:
-                        cleanup(options['mountpoint'])
+                    # returns failure and a different backup can be selected
+                    elif extract_response[0] == 'B' or extract_response == 'b':
+                        print("Returning to backup selection.")
                         return 1
-                        # returns to backup selection
-                else:
-                    print("Invalid input")
+                    elif extract_response[0] == 'W' or extract_response[0] == 'w':
+                        # search within
+                        search_regex = search_filename("Please enter an additional search term (a parent folder or " +
+                                "file extension can narrow it down a lot): ")
+                        # if this is not the second search performed, new_files will exist and we should search within that
+                        try:
+                            new_files
+                        except NameError:
+                            # in either case, join the array of raw file info back into a single text string so that the
+                            # original search function will work.
+                            new_files = find_files("\n".join(raw_files), search_regex)
+                        else:
+                            new_files = find_files("\n".join(new_files), search_regex)
+
+                        all_files = parse_file_info(new_files)
+                        print_found_files(all_files)
+                        # back around for another pass
+                        continue
+
+                    elif extract_response[0] == 'M' or extract_response == 'm':
+                        # mount that backup
+                        self.mount(options)
+                        done = done_mounting(options['mountpoint'], options['opencommand'])
+                        if done:
+                            return 0
+                            # exits the program
+                        else:
+                            cleanup(options['mountpoint'])
+                            return 1
+                            # returns to backup selection
+                    else:
+                        print("Invalid input")
+                        continue
+                except IndexError:
+                    print("Please enter a response.")
                     continue
-            except IndexError:
-                print("Please enter a response.")
-                continue
             else:
                 print("Something has gone wrong.")
                 sys.exit(1)
@@ -270,7 +272,14 @@ def done_mounting(mountpoint, opencommand):
 # end done
 
 def find_files(file_list, regex):
-    raw_files = regex.findall(str(file_list))
+    print("Starting search")
+    while 1:
+        raw_files = regex.findall(str(file_list))
+        if len(raw_files) == 0:
+            regex = search_filename("No matches found. Please enter a new" +
+                    " search.")
+        else:
+            break
     return raw_files
 
 def print_found_files(file_list):

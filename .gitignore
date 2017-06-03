@@ -10,3 +10,7 @@
 
 #pycache directory
 __pycache__
+
+# logs and test scripts
+borgtests.sh
+*.log
