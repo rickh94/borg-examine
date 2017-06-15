@@ -6,6 +6,7 @@ import datetime
 today = datetime.date.today()
 yesterday = (today - datetime.timedelta(days=1))
 last_week = (yesterday - datetime.timedelta(days=7))
+last_year = (yesterday - datetime.timedelta(days=365))
 
 def narrow_down(backups):
     # user input
@@ -30,7 +31,10 @@ def narrow_down(backups):
                 '2': 'All backups from today',
                 '3': 'All backups from yesterday',
                 '4': 'All backups from the last week (not including today and yesterday),',
-                '5': 'Backups from before last week' }
+                '5': 'Backups from before last week',
+                # '6': 'Backups from last year'
+                }
+            # 6 for debugging only
         # print options with keys
         for k, v in choices.items():
             print('(' + k + ')', v)
@@ -51,7 +55,14 @@ def narrow_down(backups):
         # end validation loop
 
         # dictionary of tests for choose function
-        tests = {'2': 'today', '3': 'yesterday', '4': 'last week', '5': 'older'}
+        tests = {
+                '2': 'today', 
+                '3': 'yesterday', 
+                '4': 'last week', 
+                '5': 'older',
+                # '6': 'last year'
+                }
+            # 6 for debugging only
         chosen = []
         try: 
             if choice == '1':
@@ -93,5 +104,7 @@ def choose(backup, test):
         return bool(yesterday > backup.date_time.date() > last_week)
     elif test == 'older':
         return bool(backup.date_time.date() < last_week)
+    # elif test == 'last year':
+    #     return bool(backup.date_time.date() < last_year)
     # end tests if
 # end def choose

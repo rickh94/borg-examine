@@ -59,12 +59,7 @@ class Backup(DatedInfo):
 
         # searches for initial list of files, creates objects, prints, returns array
         #optimization code
-        # time1 = datetime.datetime.now()
         raw_files = find_files(backup_list[0], file_regex)
-        # time2 = datetime.datetime.now()
-        # delta = time2 - time1
-        # print("search took {}".format(delta.total_seconds()))
-        # cont = input("hi")
         all_files = parse_file_info(raw_files)
         print_found_files(all_files)
 
@@ -75,7 +70,7 @@ class Backup(DatedInfo):
                     "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
             # try to extract file at index, if other choice was made, error is raised and block is skipped
             try:
-                file_num = int(extract_response)
+                file_num = int(extract_response) - 1
                 # reset loop if file_num is not proper index
                 if not file_num < len(all_files):
                     print("Invalid input.")
@@ -98,17 +93,21 @@ class Backup(DatedInfo):
 
                 # wait for user confirmation to open restored file
                 trash = input("Press [enter] to see your extracted file.")
-                subprocess.run([options['opencommand'], ext_dir])
+                subprocess.Popen([options['opencommand'], ext_dir])
 
                 # check if file is correct and try again return failure or go back somewhere in loop
                 while True:
                     done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
-                            "extract a file from a [D]ifferent backup\n\t[E]xit this program")
+                            "extract a file from a [D]ifferent " +
+                            "backup\n\t[E]xit this program\n")
                     try:
                         if done[0] == 'F' or done[0] == 'f':
                             tmp_list = backup_list[0]
                             new_files, all_files = new_search(tmp_list)
-                            break
+                            extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
+                                    "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
+                                    "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
+
                         # different backup
                         elif done[0] == 'D' or done[0] == 'd':
                             return 1
@@ -122,7 +121,6 @@ class Backup(DatedInfo):
                     except IndexError:
                         continue
                     # end try
-
 
             # executes if input is not int
             except ValueError:
@@ -193,7 +191,14 @@ class FoundFile(DatedInfo):
 ########## FILE FUNCTIONS SECTION ############ 
 def search_filename(message): 
     # get input and clean it for use in regex 
-    filename = input(message)
+    while 1:
+        filename = input(message)
+        if filename != '':
+            break
+        else:
+            print("No input detected")
+    # end while (for input validation)
+
     filename = re.escape(filename.strip())
     # create regex that will return entire line from borg list based on user input
     file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
@@ -281,7 +286,7 @@ def find_files(file_list, regex):
         raw_files = regex.findall(str(file_list))
         if len(raw_files) == 0:
             regex = search_filename("No matches found. Please enter a new" +
-                    " search.")
+                    " search: ")
         else:
             break
     return raw_files
@@ -293,7 +298,7 @@ def print_found_files(file_list):
     while i < len(file_list):
         f = file_list[i]
         # number and format for printing
-        output = ['(' + str(i) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
+        output = ['(' + str(i + 1) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
         print("{:<4} {:<90} {:>10}".format(*output))
         i += 1
     # end while (printing files)
