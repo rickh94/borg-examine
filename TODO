@@ -1,4 +1,3 @@
-bug: extract_file throws IndexError if no input line 124
 CLEANING:
   make a function for generating borg system calls more cleanly
   rewrite README.md

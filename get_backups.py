@@ -63,6 +63,7 @@ class Backup(DatedInfo):
         all_files = parse_file_info(raw_files)
         print_found_files(all_files)
 
+        go_back = 0
         # loop to validate input
         while True:
             extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
@@ -78,23 +79,10 @@ class Backup(DatedInfo):
                 else:
                     print("Extracting your file...")
                 # end if
-                to_extract = all_files[file_num]
-
-                # make extraction dir if not found and change to it
-                ext_dir = options['extractdir']
-                if not os.path.exists(ext_dir): os.mkdir(ext_dir)
-                os.chdir('/tmp')
-                # extract the file and rename it
-                subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
-                        env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
-                full_extract = '/tmp/' + to_extract.name
-                extracted_file_name = os.path.basename(full_extract)
-                shutil.move(full_extract, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%d_%H:%M:%S-") + extracted_file_name)
-
-                # wait for user confirmation to open restored file
-                trash = input("Press [enter] to see your extracted file.")
-                subprocess.Popen([options['opencommand'], ext_dir])
-
+                try:
+                    self.extract(file_num, new_files, options)
+                except NameError:
+                    self.extract(file_num, all_files, options)
                 # check if file is correct and try again return failure or go back somewhere in loop
                 while True:
                     done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
@@ -104,10 +92,8 @@ class Backup(DatedInfo):
                         if done[0] == 'F' or done[0] == 'f':
                             tmp_list = backup_list[0]
                             new_files, all_files = new_search(tmp_list)
-                            extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
-                                    "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
-                                    "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
-
+                            print_found_files(new_files)
+                            go_back = 1
                         # different backup
                         elif done[0] == 'D' or done[0] == 'd':
                             return 1
@@ -121,6 +107,8 @@ class Backup(DatedInfo):
                     except IndexError:
                         continue
                     # end try
+                    if go_back == 1:
+                        continue
 
             # executes if input is not int
             except ValueError:
@@ -179,6 +167,26 @@ class Backup(DatedInfo):
             # end try (for user input)
         # end while (user input)
     # end def extract_file
+
+    def extract(self, num, file_list, options):
+        to_extract = file_list[num]
+
+        # make extraction dir if not found and change to it
+        ext_dir = options['extractdir']
+        if not os.path.exists(ext_dir): os.mkdir(ext_dir)
+
+        os.chdir('/tmp')
+        # extract the file and rename it
+        subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
+                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        full_extract = '/tmp/' + to_extract.name
+        extracted_file_name = os.path.basename(full_extract)
+        shutil.move(full_extract, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%d_%H:%M:%S-") + extracted_file_name)
+
+        # wait for user confirmation to open restored file
+        trash = input("Press [enter] to see your extracted file.")
+        subprocess.Popen([options['opencommand'], ext_dir])
+
 
 # end Backup class
 
@@ -247,9 +255,11 @@ def parse_backup_info(backup_array):
         raw_date = re.search(r'\s\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}', backup).group()
         date_time = datetime.datetime.strptime(raw_date, ' %Y-%m-%d %H:%M:%S')
 
+        # ignore checkpoints
+        if re.match(".*\.checkpoint", name) is None:
+            tmp = Backup(name, date_time)
+            all_backups.append(tmp)
         # add backup object to list
-        tmp = Backup(name, date_time)
-        all_backups.append(tmp)
     # end for loop (storing info)
 
     return all_backups
