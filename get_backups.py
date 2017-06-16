@@ -2,6 +2,7 @@
 # class and functions for retrieving backup information.
 
 import os, subprocess, datetime, re, sys, shutil, atexit
+import borg_command
 
 ######## CLASSES SECTION ##########
 
@@ -35,18 +36,20 @@ class Backup(DatedInfo):
         print("Please wait a moment, your backup is being retrieved.")
         # create the mountpoint if it doesn't already exist
         if not os.path.exists(options['mountpoint']): os.mkdir(options['mountpoint'])
-        atexit.register(cleanup, options['mountpoint'])
+        # atexit.register(cleanup, options['mountpoint'])
         # mount the backup
-        run = subprocess.Popen(['borg', 'mount', options['repopath'] + '::' + self.name, 
-            options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        run = borg_command.create('run', 'mount', self.name)
+        # run = subprocess.Popen(['borg', 'mount', options['repopath'] + '::' + self.name,
+            # options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
     # end def mount
 
     def extract_file(self, options, file_regex):
         # get list of files from backup
-        make_list = subprocess.Popen(['borg', 'list', options['repopath'] + '::' + self.name], \
-                stdout=subprocess.PIPE, \
-                stderr=subprocess.STDOUT, \
-                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        make_list = borg_command.create('Popen', 'list', self.name)
+        # make_list = subprocess.Popen(['borg', 'list', options['repopath'] + '::' + self.name], \
+        #         stdout=subprocess.PIPE, \
+        #         stderr=subprocess.STDOUT, \
+        #         env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
         # store output and return code
         backup_list = make_list.communicate()[0].decode(sys.stdout.encoding),make_list.returncode
 
@@ -64,6 +67,7 @@ class Backup(DatedInfo):
         print_found_files(all_files)
 
         go_back = 0
+        new_files = []
         # loop to validate input
         while True:
             extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
@@ -79,10 +83,8 @@ class Backup(DatedInfo):
                 else:
                     print("Extracting your file...")
                 # end if
-                try:
-                    self.extract(file_num, new_files, options)
-                except NameError:
-                    self.extract(file_num, all_files, options)
+                # extract from new_files it present
+                self.extract(file_num, all_files, options)
                 # check if file is correct and try again return failure or go back somewhere in loop
                 while True:
                     done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
@@ -92,8 +94,8 @@ class Backup(DatedInfo):
                         if done[0] == 'F' or done[0] == 'f':
                             tmp_list = backup_list[0]
                             new_files, all_files = new_search(tmp_list)
-                            print_found_files(new_files)
                             go_back = 1
+                            break
                         # different backup
                         elif done[0] == 'D' or done[0] == 'd':
                             return 1
@@ -107,8 +109,8 @@ class Backup(DatedInfo):
                     except IndexError:
                         continue
                     # end try
-                    if go_back == 1:
-                        continue
+                if go_back == 1:
+                    continue
 
             # executes if input is not int
             except ValueError:
@@ -129,14 +131,12 @@ class Backup(DatedInfo):
                         search_regex = search_filename("Please enter an additional search term (a parent folder or " +
                                 "file extension can narrow it down a lot): ")
                         # if this is not the second search performed, new_files will exist and we should search within that
-                        try:
-                            new_files
-                        except NameError:
-                            # in either case, join the array of raw file info back into a single text string so that the
-                            # original search function will work.
-                            new_files = find_files("\n".join(raw_files), search_regex)
-                        else:
+                        # in either case, join the array of raw file info back into a single text string so that the
+                        # original search function will work.
+                        if new_files:
                             new_files = find_files("\n".join(new_files), search_regex)
+                        else:
+                            new_files = find_files("\n".join(raw_files), search_regex)
 
                         all_files = parse_file_info(new_files)
                         print_found_files(all_files)
@@ -177,8 +177,9 @@ class Backup(DatedInfo):
 
         os.chdir('/tmp')
         # extract the file and rename it
-        subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
-                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+        borg_command.create('run', 'extract', self.name, to_extract.name)
+        # subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
+        #         env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
         full_extract = '/tmp/' + to_extract.name
         extracted_file_name = os.path.basename(full_extract)
         shutil.move(full_extract, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%d_%H:%M:%S-") + extracted_file_name)
@@ -190,8 +191,6 @@ class Backup(DatedInfo):
 
 # end Backup class
 
-
-                
 
 class FoundFile(DatedInfo):
     pass
@@ -224,7 +223,10 @@ def parse_file_info(file_array):
         find_name = re.search(r':\d{2}\s.*', f).group()
         # drop date part of regex
         name = find_name[4:]
-        all_files.append(FoundFile(name, date_time))
+        # ignore symlinks
+        if re.search('.*->.*', name) is None:
+            # add file as object to array
+            all_files.append(FoundFile(name, date_time))
     # end for loop (making objects from array)
     return all_files
 # end def parse_file_info
@@ -233,10 +235,11 @@ def parse_file_info(file_array):
 ########## BACKUP FUNCTIONS SECTIONS ############
 def backup_list(repopath, passphrase):
     # get list from backup repo
-    run = subprocess.Popen(['borg', 'list', repopath], \
-            stdout=subprocess.PIPE, \
-            stderr=subprocess.STDOUT, \
-            env=dict(os.environ, BORG_PASSPHRASE=passphrase))
+    # run = subprocess.Popen(['borg', 'list', repopath], \
+    #         stdout=subprocess.PIPE, \
+    #         stderr=subprocess.STDOUT, \
+    #         env=dict(os.environ, BORG_PASSPHRASE=passphrase))
+    run = borg_command.create('Popen', 'list')
     ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
     # stop program if list doesn't properly get a list
     if int(ret[1]) != 0: catch_borg_errors(ret)
