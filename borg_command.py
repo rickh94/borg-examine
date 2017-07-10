@@ -7,8 +7,8 @@ import subprocess
 import os
 import sys
 import atexit
+import settings
 
-options = config.parseconfig()
 
 # borg_command() - generates borg calls
 # mandatory arguments:
@@ -30,7 +30,7 @@ def create(
     # handle options differently based on subcommand
     if subcommand == 'list':
         # add repopath
-        tmp = options['repopath']
+        tmp = getattr(settings, 'repopath')
         # add folder path if it exists
         # append backup name if provided
         try:
@@ -41,15 +41,15 @@ def create(
         # append constructed command
         full_command.append(tmp)
     elif subcommand == 'mount':
-        full_command.append(options['repopath'] + '::' + args[0])
-        full_command.append(options['mountpoint'])
+        full_command.append(getattr(settings, 'repopath') + '::' + args[0])
+        full_command.append(getattr(settings, 'mountpoint'))
         atexit.register(create, 'run', 'umount')
         # it may raise IndexError but this can only be raised by a bug anyway.
     elif subcommand == 'umount':
-        full_command.append(options['mountpoint'])
+        full_command.append(getattr(settings, 'mountpoint'))
     elif subcommand == 'extract':
         # add backup to extract from
-        full_command.append(options['repopath'] + '::' + args[0])
+        full_command.append(getattr(settings, 'repopath') + '::' + args[0])
         # add file to extract
         full_command.append(args[1])
     
@@ -59,14 +59,14 @@ def create(
                 full_command, \
                 stdout=subprocess.PIPE, \
                 stderr=subprocess.STDOUT, \
-                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase'])
+                env=dict(os.environ, BORG_PASSPHRASE=getattr(settings, 'passphrase'))
                 )
     elif runtype == 'run':
         return subprocess.run( \
                 full_command, \
                 stdout=subprocess.PIPE, \
                 stderr=subprocess.STDOUT, \
-                env=dict(os.environ, BORG_PASSPHRASE=options['passphrase'])
+                env=dict(os.environ, BORG_PASSPHRASE=getattr(settings, 'passphrase'))
                 )
     else:
         raise SyntaxError("no valid runtype found")
@@ -89,7 +89,7 @@ def create(
 # print(ret3[0])
 #
 # filename = input('paste filename')
-# os.chdir(options['extractdir'])
+# os.chdir(getattr(settings, 'extractdir'))
 # run4 = borg_command('run', 'extract', backup, filename)
 # print('press enter to continue')
 #

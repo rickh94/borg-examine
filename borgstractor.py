@@ -8,6 +8,7 @@ import os, subprocess, pprint, re, sys, datetime, atexit
 import config
 import get_backups
 import narrow_down
+import settings
 
 
 # choose a backup to examine.
@@ -46,11 +47,11 @@ def main():
     print("Please follow the directions on the screen. Press Ctrl-C at any time to exit")
     print("Reading configuration...")
     # get configuration out of config file
-    options = config.parseconfig()
+    config.parseconfig()
 
     print("Retrieving backups...")
     # get the actual backups
-    all_backups = get_backups.backup_list(options['repopath'], options['passphrase']) 
+    all_backups = get_backups.backup_list() 
 
     # store the backups nicely
     backups_clean = get_backups.parse_backup_info(all_backups)
@@ -62,7 +63,7 @@ def main():
         b = choose_examine(fewer)
         search_regex = get_backups.search_filename("Please enter the name of the file/folder you are looking for: ")
         
-        ret = fewer[b].extract_file(options, search_regex)
+        ret = fewer[b].extract_file(search_regex)
         if ret == 1:
             print("\nReturning to backups...\n")
             continue

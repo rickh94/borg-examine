@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
 import os, configparser, sys, subprocess
+import settings
 
 def parseconfig():
     config = configparser.ConfigParser()
@@ -23,8 +24,9 @@ def parseconfig():
             'opencommand': config['System']['opencommand'],
             'extractdir': config['Recovery']['extractdir']
             }
+    for name, val in options.items():
+        setattr(settings, name, val)
 
-    return options
 
 # creates configuration file if none present
 def make_config_file(home, config, config_folder, config_path):

@@ -3,6 +3,7 @@
 
 import os, subprocess, datetime, re, sys, shutil, atexit
 import borg_command
+import settings
 
 ######## CLASSES SECTION ##########
 
@@ -31,17 +32,17 @@ class DatedInfo:
 # Class for storing information about backups in a repo.
 class Backup(DatedInfo):
     # mount the backup.
-    def mount(self, options):
+    def mount(self):
         # A nice message in case it takes a while
         print("Please wait a moment, your backup is being retrieved.")
         # create the mountpoint if it doesn't already exist
-        if not os.path.exists(options['mountpoint']): os.mkdir(options['mountpoint'])
-        # atexit.register(cleanup, options['mountpoint'])
+        if not os.path.exists(getattr(settings, 'mountpoint')): os.mkdir(getattr(settings, 'mountpoint'))
+        # atexit.register(cleanup, getattr(settings, 'mountpoint'))
         # mount the backup
         run = borg_command.create('run', 'mount', self.name)
     # end def mount
 
-    def extract_file(self, options, file_regex):
+    def extract_file(self, file_regex):
         # TODO: move all of this into a function
         # get list of files from backup
         make_list = borg_command.create('Popen', 'list', self.name)
@@ -78,7 +79,7 @@ class Backup(DatedInfo):
                     print("Extracting your file...")
                 # end if
                 # extract from new_files it present
-                self.extract(file_num, all_files, options)
+                self.extract(file_num, all_files)
                 # check if file is correct and try again return failure or go back somewhere in loop
                 done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
                         "extract a file from a [D]ifferent " +
@@ -139,13 +140,13 @@ class Backup(DatedInfo):
 
                     elif extract_response[0] == 'M' or extract_response == 'm':
                         # mount that backup
-                        self.mount(options)
-                        done = done_mounting(options['mountpoint'], options['opencommand'])
+                        self.mount()
+                        done = done_mounting(getattr(settings, 'mountpoint'), getattr(settings, 'opencommand'))
                         if done:
                             return 0
                             # exits the program
                         else:
-                            cleanup(options['mountpoint'])
+                            cleanup(getattr(settings, 'mountpoint'))
                             return 1
                             # returns to backup selection
                     else:
@@ -163,11 +164,11 @@ class Backup(DatedInfo):
         # end while (user input)
     # end def extract_file
 
-    def extract(self, num, file_list, options):
+    def extract(self, num, file_list):
         to_extract = file_list[num]
 
         # make extraction dir if not found and change to it
-        ext_dir = options['extractdir']
+        ext_dir = getattr(settings, 'extractdir')
         if not os.path.exists(ext_dir): os.mkdir(ext_dir)
 
         os.chdir('/tmp')
@@ -180,7 +181,7 @@ class Backup(DatedInfo):
 
         # wait for user confirmation to open restored file
         trash = input("Press [enter] to see your extracted file.")
-        subprocess.Popen([options['opencommand'], ext_dir])
+        subprocess.Popen([getattr(settings, 'opencommand'), ext_dir])
 
 
 # end Backup class
@@ -227,7 +228,7 @@ def parse_file_info(file_array):
 
 
 ########## BACKUP FUNCTIONS SECTIONS ############
-def backup_list(repopath, passphrase):
+def backup_list():
     # get list from backup repo
     run = borg_command.create('Popen', 'list')
     ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
