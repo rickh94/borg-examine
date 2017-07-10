@@ -2,12 +2,12 @@
 # borg_command.py - generates calls to borg programatically instead of
 # manually
 
-import config
+from borgstractor import config
+from borgstractor import settings
 import subprocess
 import os
 import sys
 import atexit
-import settings
 
 
 # borg_command() - generates borg calls

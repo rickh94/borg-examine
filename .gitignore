@@ -14,3 +14,8 @@ __pycache__
 # logs and test scripts
 borgtests.sh
 *.log
+
+build
+*.egg-info
+dist
+

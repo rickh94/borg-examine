@@ -5,10 +5,10 @@
 # check periodically for mounted borgfs.
 
 import os, subprocess, pprint, re, sys, datetime, atexit
-import config
-import get_backups
-import narrow_down
-import settings
+from borgstractor import config
+from borgstractor import get_backups
+from borgstractor import narrow_down
+from borgstractor import settings
 
 
 # choose a backup to examine.
