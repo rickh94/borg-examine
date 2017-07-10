@@ -39,17 +39,12 @@ class Backup(DatedInfo):
         # atexit.register(cleanup, options['mountpoint'])
         # mount the backup
         run = borg_command.create('run', 'mount', self.name)
-        # run = subprocess.Popen(['borg', 'mount', options['repopath'] + '::' + self.name,
-            # options['mountpoint']], env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
     # end def mount
 
     def extract_file(self, options, file_regex):
+        # TODO: move all of this into a function
         # get list of files from backup
         make_list = borg_command.create('Popen', 'list', self.name)
-        # make_list = subprocess.Popen(['borg', 'list', options['repopath'] + '::' + self.name], \
-        #         stdout=subprocess.PIPE, \
-        #         stderr=subprocess.STDOUT, \
-        #         env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
         # store output and return code
         backup_list = make_list.communicate()[0].decode(sys.stdout.encoding),make_list.returncode
 
@@ -61,7 +56,6 @@ class Backup(DatedInfo):
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
         # searches for initial list of files, creates objects, prints, returns array
-        #optimization code
         raw_files = find_files(backup_list[0], file_regex)
         all_files = parse_file_info(raw_files)
         print_found_files(all_files)
@@ -86,10 +80,10 @@ class Backup(DatedInfo):
                 # extract from new_files it present
                 self.extract(file_num, all_files, options)
                 # check if file is correct and try again return failure or go back somewhere in loop
+                done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
+                        "extract a file from a [D]ifferent " +
+                        "backup\n\t[E]xit this program\n")
                 while True:
-                    done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
-                            "extract a file from a [D]ifferent " +
-                            "backup\n\t[E]xit this program\n")
                     try:
                         if done[0] == 'F' or done[0] == 'f':
                             tmp_list = backup_list[0]
@@ -103,7 +97,7 @@ class Backup(DatedInfo):
                         elif done[0] == 'E' or done[0] == 'e':
                             return 0
                         else:
-                            done = input("Please enter your selection")
+                            done = input("Please enter your selection ")
                             continue
                         # end if
                     except IndexError:
@@ -161,6 +155,7 @@ class Backup(DatedInfo):
                     print("Please enter a response.")
                     continue
             else:
+                # catastrophic problem. should never happen. kills program.
                 print("Something has gone wrong.")
                 sys.exit(1)
                 # end if / elif for non-number input
@@ -178,8 +173,7 @@ class Backup(DatedInfo):
         os.chdir('/tmp')
         # extract the file and rename it
         borg_command.create('run', 'extract', self.name, to_extract.name)
-        # subprocess.run(['borg', 'extract', options['repopath'] + '::' + self.name, to_extract.name], \
-        #         env=dict(os.environ, BORG_PASSPHRASE=options['passphrase']))
+
         full_extract = '/tmp/' + to_extract.name
         extracted_file_name = os.path.basename(full_extract)
         shutil.move(full_extract, ext_dir + '/' + to_extract.date_time.strftime("%Y-%m-%d_%H:%M:%S-") + extracted_file_name)
@@ -235,10 +229,6 @@ def parse_file_info(file_array):
 ########## BACKUP FUNCTIONS SECTIONS ############
 def backup_list(repopath, passphrase):
     # get list from backup repo
-    # run = subprocess.Popen(['borg', 'list', repopath], \
-    #         stdout=subprocess.PIPE, \
-    #         stderr=subprocess.STDOUT, \
-    #         env=dict(os.environ, BORG_PASSPHRASE=passphrase))
     run = borg_command.create('Popen', 'list')
     ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
     # stop program if list doesn't properly get a list
