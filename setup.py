@@ -1,9 +1,10 @@
 from setuptools import setup,find_packages
 from codecs import open
 from os import path
+from subprocess import run
 
 here = path.abspath(path.dirname(__file__))
-vers = 'dev' 
+vers = '0.2.0'
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
