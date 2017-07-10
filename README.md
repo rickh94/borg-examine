@@ -8,7 +8,12 @@ you are not comfortable with this, you can use key-based authentication (check
 borg's documentation for details).
 
 ## Installation 
-Copy everything and make it executable. Will improve soon.
+```shell
+$ git clone https://github.com/rickh94/borgstractor.git
+$ cd borgstractor
+# python3 setup.py install
+```
+
 This is a wrapper script for [Borg
 Backup](http://borgbackup.readthedocs.io/en/stable) which only supports
 unix-like operating systems, so this script only supports unix-like operating
