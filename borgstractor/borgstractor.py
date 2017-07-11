@@ -5,10 +5,12 @@
 # check periodically for mounted borgfs.
 
 import os, subprocess, pprint, re, sys, datetime, atexit
-from borgstractor import config
-from borgstractor import get_backups
-from borgstractor import narrow_down
-from borgstractor import settings
+import config, get_backups, narrow_down, settings, session 
+# from borgstractor import config
+# from borgstractor import get_backups
+# from borgstractor import narrow_down
+# from borgstractor import settings
+# from borgstractor import session
 
 
 # choose a backup to examine.
@@ -48,10 +50,13 @@ def main():
     print("Reading configuration...")
     # get configuration out of config file
     config.parseconfig()
+    my_session = session.Session()
 
     print("Retrieving backups...")
     # get the actual backups
     all_backups = get_backups.backup_list() 
+    my_session.write_attr('all_backups', str(all_backups))
+    my_session.write()
 
     # store the backups nicely
     backups_clean = get_backups.parse_backup_info(all_backups)

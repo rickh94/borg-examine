@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
 import os, configparser, sys, subprocess
-from borgstractor import settings
+import settings
+# from borgstractor import settings
 
 def parseconfig():
     config = configparser.ConfigParser()

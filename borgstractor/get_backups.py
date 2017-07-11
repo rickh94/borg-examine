@@ -2,8 +2,9 @@
 # class and functions for retrieving backup information.
 
 import os, subprocess, datetime, re, sys, shutil, atexit
-from borgstractor import borg_command
-from borgstractor import settings
+import borg_command, settings
+# from borgstractor import borg_command
+# from borgstractor import settings
 
 ######## CLASSES SECTION ##########
 
