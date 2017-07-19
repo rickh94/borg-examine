@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
 import os, configparser, sys, subprocess
-import settings
-# from borgstractor import settings
+DEBUG = 1
+if DEBUG == 1:
+    import settings
+else:
+    from borgstractor import settings
+
+def setattrs(_self, **kwargs):
+    for k,v in kwargs.items():
+        setattr(_self, k, v)
 
 def parseconfig():
     config = configparser.ConfigParser()
@@ -19,14 +26,16 @@ def parseconfig():
     # read configuration file
     config.read(config_path)
 
-    options = {'repopath': config['Repo']['Path'],
-            'passphrase': config['Repo']['passphrase'],
-            'mountpoint': config['Recovery']['mountpoint'],
-            'opencommand': config['System']['opencommand'],
-            'extractdir': config['Recovery']['extractdir']
-            }
-    for name, val in options.items():
-        setattr(settings, name, val)
+    setattrs(settings,
+            repopath = config['Repo']['Path'],
+            passphrase = config['Repo']['passphrase'],
+            mountpoint = config['Recovery']['mountpoint'],
+            opencommand = config['System']['opencommand'],
+            extractdir = config['Recovery']['extractdir']
+            )
+    print(settings.repopath)
+    # for name, val in options.items():
+        # setattr(settings, name, val)
 
 
 # creates configuration file if none present
