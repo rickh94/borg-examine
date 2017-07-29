@@ -71,6 +71,9 @@ class Backup(DatedInfo):
                     "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
             # try to extract file at index, if other choice was made, error is raised and block is skipped
             try:
+                # file indicies were printed offset by 1 so they don't start
+                # at 0. This just removes that offset so the inidicies line up
+                # with the list again.
                 file_num = int(extract_response) - 1
                 # reset loop if file_num is not proper index
                 if not file_num < len(all_files):
@@ -302,7 +305,7 @@ def print_found_files(file_list):
     # print out files
     while i < len(file_list):
         f = file_list[i]
-        # number and format for printing
+        # offset i for printing and better UX
         output = ['(' + str(i + 1) + ')', f.name, 'LAST MODIFIED ' + f.pretty_date()]
         print("{:<4} {:<90} {:>10}".format(*output))
         i += 1
