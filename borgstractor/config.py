@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # read configuration file for borg-examine program
 import os, configparser, sys, subprocess
-DEBUG = 1
-if DEBUG == 1:
-    import settings
-else:
-    from borgstractor import settings
+from borgstractor import settings
 
 def setattrs(_self, **kwargs):
     for k,v in kwargs.items():

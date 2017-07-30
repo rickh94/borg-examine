@@ -2,9 +2,8 @@
 # class and functions for retrieving backup information.
 
 import os, subprocess, datetime, re, sys, shutil, atexit
-import borg_command, settings
-# from borgstractor import borg_command
-# from borgstractor import settings
+from borgstractor import borg_command
+from borgstractor import settings
 
 ######## CLASSES SECTION ##########
 
@@ -43,7 +42,10 @@ class Backup(DatedInfo):
         run = borg_command.create('run', 'mount', self.name)
     # end def mount
 
-    def extract_file(self, file_regex):
+    def extract_file(
+            self, 
+            # file_regex
+            ):
         # TODO: move all of this into a function
         # get list of files from backup
         make_list = borg_command.create('Popen', 'list', self.name)
@@ -58,111 +60,115 @@ class Backup(DatedInfo):
         if int(backup_list[1]) != 0: catch_borg_errors(backup_list)
 
         # searches for initial list of files, creates objects, prints, returns array
-        raw_files = find_files(backup_list[0], file_regex)
-        all_files = parse_file_info(raw_files)
-        print_found_files(all_files)
-
-        go_back = 0
-        new_files = []
-        # loop to validate input
-        while True:
-            extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
-                    "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
-                    "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
-            # try to extract file at index, if other choice was made, error is raised and block is skipped
-            try:
-                # file indicies were printed offset by 1 so they don't start
-                # at 0. This just removes that offset so the inidicies line up
-                # with the list again.
-                file_num = int(extract_response) - 1
-                # reset loop if file_num is not proper index
-                if not file_num < len(all_files):
-                    print("Invalid input.")
-                    continue
-                else:
-                    print("Extracting your file...")
-                # end if
-                # extract from new_files it present
-                self.extract(file_num, all_files)
-                # check if file is correct and try again return failure or go back somewhere in loop
-                done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
-                        "extract a file from a [D]ifferent " +
-                        "backup\n\t[E]xit this program\n")
-                while True:
-                    try:
-                        if done[0] == 'F' or done[0] == 'f':
-                            tmp_list = backup_list[0]
-                            new_files, all_files = new_search(tmp_list)
-                            go_back = 1
-                            break
-                        # different backup
-                        elif done[0] == 'D' or done[0] == 'd':
-                            return 1
-                        # done. exit
-                        elif done[0] == 'E' or done[0] == 'e':
-                            return 0
-                        else:
-                            done = input("Please enter your selection ")
-                            continue
-                        # end if
-                    except IndexError:
-                        continue
-                    # end try
-                if go_back == 1:
-                    continue
-
-            # executes if input is not int
-            except ValueError:
-                try:
-                    # new search
-                    if extract_response[0] == 'N' or extract_response == 'n':
-                        tmp_list = backup_list[0]
-                        new_files, all_files = new_search(tmp_list)
-                        # go back to extract response and try again
-                        continue
-
-                    # returns failure and a different backup can be selected
-                    elif extract_response[0] == 'B' or extract_response == 'b':
-                        print("Returning to backup selection.")
-                        return 1
-                    elif extract_response[0] == 'W' or extract_response[0] == 'w':
-                        # search within
-                        search_regex = search_filename("Please enter an additional search term (a parent folder or " +
-                                "file extension can narrow it down a lot): ")
-                        # if this is not the second search performed, new_files will exist and we should search within that
-                        # in either case, join the array of raw file info back into a single text string so that the
-                        # original search function will work.
-                        if new_files:
-                            new_files = find_files("\n".join(new_files), search_regex)
-                        else:
-                            new_files = find_files("\n".join(raw_files), search_regex)
-
-                        all_files = parse_file_info(new_files)
-                        print_found_files(all_files)
-                        # back around for another pass
-                        continue
-
-                    elif extract_response[0] == 'M' or extract_response == 'm':
-                        # mount that backup
-                        self.mount()
-                        done = done_mounting(getattr(settings, 'mountpoint'), getattr(settings, 'opencommand'))
-                        if done:
-                            return 0
-                            # exits the program
-                        else:
-                            cleanup(getattr(settings, 'mountpoint'))
-                            return 1
-                            # returns to backup selection
-                    else:
-                        print("Invalid input")
-                        continue
-                except IndexError:
-                    print("Please enter a response.")
-                    continue
-            else:
-                # catastrophic problem. should never happen. kills program.
-                print("Something has gone wrong.")
-                sys.exit(1)
+        file_list = backup_list[0].split('\n')
+        found_files = search_filename('enter search', file_list)
+        # print(found_files)
+        # raw_files = find_files(backup_list[0], file_regex)
+        all_files = parse_file_info(file_list)
+        print(all_files)
+        # print_found_files(all_files)
+        #
+        # go_back = 0
+        # new_files = []
+        # # loop to validate input
+        # while True:
+        #     extract_response = input("Enter the number of the file/folder you would like to extract, or:\n"+
+        #             "\tsearch [W]ithin results,\n\tperform a [N]ew search of this backup\n" +
+        #             "\ttemporarily [M]ount this backup\n\tor check a different [B]ackup.\n")
+        #     # try to extract file at index, if other choice was made, error is raised and block is skipped
+        #     try:
+        #         # file indicies were printed offset by 1 so they don't start
+        #         # at 0. This just removes that offset so the inidicies line up
+        #         # with the list again.
+        #         file_num = int(extract_response) - 1
+        #         # reset loop if file_num is not proper index
+        #         if not file_num < len(all_files):
+        #             print("Invalid input.")
+        #             continue
+        #         else:
+        #             print("Extracting your file...")
+        #         # end if
+        #         # extract from new_files it present
+        #         self.extract(file_num, all_files)
+        #         # check if file is correct and try again return failure or go back somewhere in loop
+        #         done = input("Would you like to:\n\textract a different [F]ile from this backup\n\t" +
+        #                 "extract a file from a [D]ifferent " +
+        #                 "backup\n\t[E]xit this program\n")
+        #         while True:
+        #             try:
+        #                 if done[0] == 'F' or done[0] == 'f':
+        #                     tmp_list = backup_list[0]
+        #                     new_files, all_files = new_search(tmp_list)
+        #                     go_back = 1
+        #                     break
+        #                 # different backup
+        #                 elif done[0] == 'D' or done[0] == 'd':
+        #                     return 1
+        #                 # done. exit
+        #                 elif done[0] == 'E' or done[0] == 'e':
+        #                     return 0
+        #                 else:
+        #                     done = input("Please enter your selection ")
+        #                     continue
+        #                 # end if
+        #             except IndexError:
+        #                 continue
+        #             # end try
+        #         if go_back == 1:
+        #             continue
+        #
+        #     # executes if input is not int
+        #     except ValueError:
+        #         try:
+        #             # new search
+        #             if extract_response[0] == 'N' or extract_response == 'n':
+        #                 tmp_list = backup_list[0]
+        #                 new_files, all_files = new_search(tmp_list)
+        #                 # go back to extract response and try again
+        #                 continue
+        #
+        #             # returns failure and a different backup can be selected
+        #             elif extract_response[0] == 'B' or extract_response == 'b':
+        #                 print("Returning to backup selection.")
+        #                 return 1
+        #             elif extract_response[0] == 'W' or extract_response[0] == 'w':
+        #                 # search within
+        #                 search_regex = search_filename("Please enter an additional search term (a parent folder or " +
+        #                         "file extension can narrow it down a lot): ")
+        #                 # if this is not the second search performed, new_files will exist and we should search within that
+        #                 # in either case, join the array of raw file info back into a single text string so that the
+        #                 # original search function will work.
+        #                 if new_files:
+        #                     new_files = find_files("\n".join(new_files), search_regex)
+        #                 else:
+        #                     new_files = find_files("\n".join(raw_files), search_regex)
+        #
+        #                 all_files = parse_file_info(new_files)
+        #                 print_found_files(all_files)
+        #                 # back around for another pass
+        #                 continue
+        #
+        #             elif extract_response[0] == 'M' or extract_response == 'm':
+        #                 # mount that backup
+        #                 self.mount()
+        #                 done = done_mounting(getattr(settings, 'mountpoint'), getattr(settings, 'opencommand'))
+        #                 if done:
+        #                     return 0
+        #                     # exits the program
+        #                 else:
+        #                     cleanup(getattr(settings, 'mountpoint'))
+        #                     return 1
+        #                     # returns to backup selection
+        #             else:
+        #                 print("Invalid input")
+        #                 continue
+        #         except IndexError:
+        #             print("Please enter a response.")
+        #             continue
+        #     else:
+        #         # catastrophic problem. should never happen. kills program.
+        #         print("Something has gone wrong.")
+        #         sys.exit(1)
                 # end if / elif for non-number input
             # end try (for user input)
         # end while (user input)
@@ -195,7 +201,7 @@ class FoundFile(DatedInfo):
     pass
 
 ########## FILE FUNCTIONS SECTION ############ 
-def search_filename(message): 
+def search_filename(message, list_of_files): 
     # get input and clean it for use in regex 
     while 1:
         filename = input(message)
@@ -205,17 +211,31 @@ def search_filename(message):
             print("No input detected")
     # end while (for input validation)
 
-    filename = re.escape(filename.strip())
-    # create regex that will return entire line from borg list based on user input
-    file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
-    print("\nSeaching for your file (this could take a while)...")
-    return file_regex
+    # filename = re.escape(filename.strip())
+    # ret_list = []
+    # for line in list_of_files:
+    #     if filename in line:
+    #         ret_list.append(line.strip())
+
+    # comprehension
+    ret_list = [line for line in list_of_files if (filename in line
+        and ' -> ' not in line)]
+
+    return ret_list
+
+    # file_regex = re.compile(r"^.*?" + filename + r".*?$", flags=re.IGNORECASE|re.MULTILINE)
+    # print("\nSeaching for your file (this could take a while)...")
+    # return file_regex
 # end def search_filename
 
 def parse_file_info(file_array):
     all_files = []
     for f in file_array:
-        # fine date
+        if f is '':
+            continue
+        if ' -> ' in f:
+            continue
+        # find date
         raw_date = re.search(r'\s\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}', f).group()
         date_time = datetime.datetime.strptime(raw_date, ' %Y-%m-%d %H:%M:%S')
         # find name after date
@@ -223,9 +243,7 @@ def parse_file_info(file_array):
         # drop date part of regex
         name = find_name[4:]
         # ignore symlinks
-        if re.search('.*->.*', name) is None:
-            # add file as object to array
-            all_files.append(FoundFile(name, date_time))
+        all_files.append(FoundFile(name, date_time))
     # end for loop (making objects from array)
     return all_files
 # end def parse_file_info

@@ -2,8 +2,7 @@
 # narrow_down.py- module to hold function for narrowing down backups presented to the user.
 
 import datetime
-import settings
-# from borgstractor import settings
+from borgstractor import settings
 
 today = datetime.date.today()
 yesterday = (today - datetime.timedelta(days=1))

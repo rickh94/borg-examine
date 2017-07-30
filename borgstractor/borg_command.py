@@ -54,14 +54,14 @@ def create(
         full_command.append(args[1])
     
     # return based on runtype option
-    if runtype == 'Popen' or runtype == 'popen':
-        return subprocess.Popen( \
-                full_command, \
-                stdout=subprocess.PIPE, \
-                stderr=subprocess.STDOUT, \
+    if runtype.lower() == 'popen':
+        return subprocess.Popen(
+                full_command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
                 env=dict(os.environ, BORG_PASSPHRASE=getattr(settings, 'passphrase'))
                 )
-    elif runtype == 'run':
+    elif runtype.lower() == 'run':
         return subprocess.run( \
                 full_command, \
                 stdout=subprocess.PIPE, \
@@ -71,25 +71,3 @@ def create(
     else:
         raise SyntaxError("no valid runtype found")
 
-# TESTS
-# run = borg_command('Popen', 'list')
-# ret = run.communicate()[0].decode(sys.stdout.encoding),run.returncode
-# print(ret[0])
-#
-# backup = input("paste in the backup name")
-# print(backup)
-# run2 = borg_command('Popen', 'mount', backup)
-# ret2 = run2.communicate()[0].decode(sys.stdout.encoding),run.returncode
-#
-# input('press enter to continue')
-# borg_command('run', 'umount')
-#
-# run3 = borg_command('Popen', 'list', backup)
-# ret3 = run3.communicate()[0].decode(sys.stdout.encoding),run.returncode
-# print(ret3[0])
-#
-# filename = input('paste filename')
-# os.chdir(getattr(settings, 'extractdir'))
-# run4 = borg_command('run', 'extract', backup, filename)
-# print('press enter to continue')
-#
