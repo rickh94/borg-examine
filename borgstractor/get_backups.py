@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # class and functions for retrieving backup information.
 
-import os, subprocess, datetime, re, sys, shutil, atexit
+import os
+import subprocess
+import datetime
+import re
+import sys
+import shutil
+import atexit
 from borgstractor import borg_command
 from borgstractor import settings
 
@@ -36,8 +42,8 @@ class Backup(DatedInfo):
         # A nice message in case it takes a while
         print("Please wait a moment, your backup is being retrieved.")
         # create the mountpoint if it doesn't already exist
-        if not os.path.exists(getattr(settings, 'mountpoint')): os.mkdir(getattr(settings, 'mountpoint'))
-        # atexit.register(cleanup, getattr(settings, 'mountpoint'))
+        if not os.path.exists(getattr(settings, 'mountpoint')): 
+            os.mkdir(getattr(settings, 'mountpoint'))
         # mount the backup
         run = borg_command.create('run', 'mount', self.name)
     # end def mount
@@ -66,6 +72,7 @@ class Backup(DatedInfo):
         # raw_files = find_files(backup_list[0], file_regex)
         all_files = parse_file_info(file_list)
         print(all_files)
+        # NOTE: A lot of this flow control should be in the main function.
         # print_found_files(all_files)
         #
         # go_back = 0
