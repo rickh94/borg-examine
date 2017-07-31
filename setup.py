@@ -1,7 +1,6 @@
 from setuptools import setup,find_packages
 from codecs import open
 from os import path
-from subprocess import run
 
 here = path.abspath(path.dirname(__file__))
 vers = '0.2.0'
