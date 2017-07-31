@@ -29,7 +29,7 @@ class DatedInfoTest(unittest.TestCase):
         y2ktest = get_backups.DatedInfo('test_y2k', self.y2k)
         self.assertEqual(y2ktest.pretty_date(), self.y2kstring)
 
-class BackupTest(self):
+class BackupTest(unittest.TestCase):
 
     def setUp(self):
         self.today = datetime.datetime.today()
