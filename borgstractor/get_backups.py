@@ -226,7 +226,7 @@ def search_filename(message, list_of_files):
 
     # comprehension
     ret_list = [line for line in list_of_files if (filename in line
-        and ' -> ' not in line)]
+                                                   and ' -> ' not in line)]
 
     return ret_list
 
@@ -251,9 +251,7 @@ def parse_file_info(file_array):
         name = find_name[4:]
         # ignore symlinks
         all_files.append(FoundFile(name, date_time))
-    # end for loop (making objects from array)
     return all_files
-# end def parse_file_info
 
 
 ########## BACKUP FUNCTIONS SECTIONS ############
